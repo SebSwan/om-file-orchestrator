@@ -29,10 +29,13 @@ async function main() {
     console.log(`  Files checked: ${stats.filesChecked}`);
     console.log(`  Files downloaded: ${stats.filesDownloaded}`);
     console.log(`  Files skipped: ${stats.filesSkipped}`);
+    console.log(`  Files deleted: ${stats.filesDeleted}`);
     console.log(`  Errors: ${stats.errors}`);
-    console.log(`  Queue size: ${stats.queue.size}`);
-    console.log(`  Queue pending: ${stats.queue.pending}`);
+    console.log(`  Cleanup errors: ${stats.cleanupErrors}`);
+    console.log(`  Download queue: ${stats.queue.size} (${stats.queue.pending} pending)`);
+    console.log(`  Cleanup queue: ${stats.cleanupQueue.size} (${stats.cleanupQueue.pending} pending)`);
     console.log(`  Last check: ${stats.lastCheck || "Never"}`);
+    console.log(`  Last cleanup: ${stats.lastCleanup || "Never"}`);
   }, 30000);
 
   // Premier check immédiat (optionnel)

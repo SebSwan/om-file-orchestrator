@@ -15,7 +15,7 @@ class WeatherOrchestratorSimple {
     // Initialiser le logger
     this.setupLogger();
 
-    // Initialiser la queue de téléchargement
+    // Initialiser la queue de téléchargement avec support des priorités
     this.downloadQueue = new PQueue({
       concurrency: config.queue.concurrency,
       interval: config.queue.interval,
@@ -24,13 +24,23 @@ class WeatherOrchestratorSimple {
       throwOnTimeout: true,
     });
 
+    // Initialiser la queue de suppression
+    this.cleanupQueue = new PQueue({
+      concurrency: 2, // Limiter les suppressions simultanées
+      interval: 1000, // 1 seconde entre les suppressions
+      intervalCap: 10, // Max 10 suppressions par seconde
+    });
+
     // Stats
     this.stats = {
       filesChecked: 0,
       filesDownloaded: 0,
       filesSkipped: 0,
+      filesDeleted: 0,
+      cleanupErrors: 0,
       errors: 0,
       lastCheck: null,
+      lastCleanup: null,
     };
 
     // Setup des événements de queue
@@ -67,6 +77,11 @@ class WeatherOrchestratorSimple {
 
     this.downloadQueue.on("idle", () => {
       this.logger.info("Download queue is idle");
+    });
+
+    // Événements pour la queue de nettoyage
+    this.cleanupQueue.on("idle", () => {
+      this.logger.debug("Cleanup queue is idle");
     });
   }
 
@@ -134,6 +149,9 @@ class WeatherOrchestratorSimple {
       }
     }
 
+    // Programmer la tâche de nettoyage (toutes les heures)
+    this.scheduleCleanup();
+
     this.logger.info("✅ Weather Orchestrator started successfully");
     this.logger.info(`📅 Scheduled tasks: ${this.scheduledTasks.size}`);
   }
@@ -176,6 +194,35 @@ class WeatherOrchestratorSimple {
     this.scheduledTasks.set(modelKey, task);
 
     this.logger.info(`📅 Scheduled ${model.name} with cron: ${cronExpression}`);
+  }
+
+  scheduleCleanup() {
+    // Programmer le nettoyage toutes les heures
+    const cronExpression = "0 * * * *"; // Toutes les heures à la minute 0
+
+    // Valider l'expression cron
+    if (!cron.validate(cronExpression)) {
+      this.logger.error(`Invalid cron expression for cleanup: ${cronExpression}`);
+      return;
+    }
+
+    // Créer la tâche planifiée
+    const task = cron.schedule(cronExpression, async () => {
+      this.logger.info("🧹 Running scheduled cleanup...");
+      try {
+        await this.cleanupOldFiles();
+      } catch (error) {
+        this.logger.error("Error in scheduled cleanup:", error.message);
+      }
+    });
+
+    // Démarrer la tâche
+    task.start();
+
+    // Sauvegarder la référence
+    this.scheduledTasks.set("cleanup", task);
+
+    this.logger.info(`📅 Scheduled cleanup with cron: ${cronExpression}`);
   }
 
   async checkAndDownloadModel(modelKey, model) {
@@ -235,7 +282,7 @@ class WeatherOrchestratorSimple {
     }
   }
 
-  async processValidTime(modelKey, model, validTime, referenceTime) {
+  async processValidTime(modelKey, model, validTime, referenceTime, priority = 0) {
     // Parser les dates
     const refDate = new Date(referenceTime);
 
@@ -264,14 +311,17 @@ class WeatherOrchestratorSimple {
     // URL source
     const sourceUrl = `${model.baseUrl}/${year}/${month}/${day}/${runHour}/${forecastTime}${model.fileExtension}`;
 
-    // Ajouter à la queue de téléchargement
+    // Ajouter à la queue de téléchargement avec priorité
+    const priorityLabel = priority > 0 ? ` [PRIORITY ${priority}]` : '';
+    this.logger.debug(`📥 Queuing download${priorityLabel}: ${relativePath}`);
+
     await this.downloadQueue.add(async () => {
       if (this.fakeMode) {
         await this.fakeDownloadFile(sourceUrl, localPath, relativePath);
       } else {
         await this.downloadFile(sourceUrl, localPath, relativePath);
       }
-    });
+    }, { priority });
 
     return true;
   }
@@ -385,9 +435,9 @@ class WeatherOrchestratorSimple {
       // Créer un fichier vide
       await fs.writeFile(fakePath, '');
 
-      // Simuler le temps de téléchargement (20 secondes)
-      this.logger.debug(`🎭 [FAKE] Waiting 20 seconds to simulate download...`);
-      await new Promise(resolve => setTimeout(resolve, 20000));
+      // Simuler le temps de téléchargement (2 secondes)
+      this.logger.debug(`🎭 [FAKE] Waiting 2 seconds to simulate download...`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       const duration = Date.now() - startTime;
 
@@ -405,6 +455,102 @@ class WeatherOrchestratorSimple {
     }
   }
 
+  async cleanupOldFiles() {
+    this.stats.lastCleanup = new Date();
+    this.logger.info("🧹 Starting cleanup of old files...");
+
+    let totalFilesDeleted = 0;
+    let totalErrors = 0;
+
+    // Parcourir tous les modèles pour nettoyer leurs fichiers
+    for (const [modelKey, model] of Object.entries(this.modelConfig.models)) {
+      if (model.retentionHours) {
+        try {
+          const deletedCount = await this.cleanupModelFiles(modelKey, model);
+          totalFilesDeleted += deletedCount;
+
+          if (deletedCount > 0) {
+            this.logger.info(`🧹 Cleaned ${deletedCount} files for ${model.name}`);
+          }
+        } catch (error) {
+          totalErrors++;
+          this.logger.error(`❌ Error cleaning files for ${model.name}:`, error.message);
+        }
+      }
+    }
+
+    this.stats.filesDeleted += totalFilesDeleted;
+    this.stats.cleanupErrors += totalErrors;
+
+    this.logger.info(`🧹 Cleanup completed: ${totalFilesDeleted} files deleted, ${totalErrors} errors`);
+  }
+
+  async cleanupModelFiles(modelKey, model) {
+    const modelDir = path.join(this.config.storage.cacheDir, modelKey);
+
+    // Vérifier si le dossier du modèle existe
+    if (!(await fs.pathExists(modelDir))) {
+      return 0;
+    }
+
+    const retentionMs = model.retentionHours * 60 * 60 * 1000; // Convertir en millisecondes
+    const cutoffTime = Date.now() - retentionMs;
+    let deletedCount = 0;
+
+    // Parcourir récursivement le dossier du modèle
+    await this.cleanupDirectory(modelDir, cutoffTime, modelKey, model, (count) => {
+      deletedCount += count;
+    });
+
+    return deletedCount;
+  }
+
+  async cleanupDirectory(dirPath, cutoffTime, modelKey, model, onDeleted) {
+    try {
+      const items = await fs.readdir(dirPath);
+
+      for (const item of items) {
+        const itemPath = path.join(dirPath, item);
+        const stats = await fs.stat(itemPath);
+
+        if (stats.isDirectory()) {
+          // Récursion pour les sous-dossiers
+          await this.cleanupDirectory(itemPath, cutoffTime, modelKey, model, onDeleted);
+
+          // Vérifier si le dossier est vide après nettoyage
+          try {
+            const remainingItems = await fs.readdir(itemPath);
+            if (remainingItems.length === 0) {
+              await fs.remove(itemPath);
+              this.logger.debug(`🗑️  Removed empty directory: ${itemPath}`);
+            }
+          } catch (error) {
+            // Ignorer les erreurs de lecture de dossier (peut être supprimé entre temps)
+          }
+        } else if (stats.isFile()) {
+          // Vérifier si le fichier correspond à l'extension du modèle
+          if (item.endsWith(model.fileExtension) || (this.fakeMode && item.endsWith('.txt'))) {
+            if (stats.mtime.getTime() < cutoffTime) {
+              // Ajouter à la queue de suppression
+              await this.cleanupQueue.add(async () => {
+                try {
+                  await fs.remove(itemPath);
+                  this.logger.debug(`🗑️  Deleted old file: ${itemPath}`);
+                  onDeleted(1);
+                } catch (error) {
+                  this.logger.error(`❌ Failed to delete file ${itemPath}:`, error.message);
+                  this.stats.cleanupErrors++;
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.error(`❌ Error reading directory ${dirPath}:`, error.message);
+    }
+  }
+
   async stop() {
     this.logger.info("🛑 Stopping Weather Orchestrator...");
 
@@ -414,8 +560,9 @@ class WeatherOrchestratorSimple {
       this.logger.debug(`Stopped scheduler for ${modelKey}`);
     }
 
-    // Attendre que la queue finisse
+    // Attendre que les queues finissent
     await this.downloadQueue.onIdle();
+    await this.cleanupQueue.onIdle();
 
     this.logger.info("👋 Weather Orchestrator stopped");
   }
@@ -426,6 +573,10 @@ class WeatherOrchestratorSimple {
       queue: {
         size: this.downloadQueue.size,
         pending: this.downloadQueue.pending,
+      },
+      cleanupQueue: {
+        size: this.cleanupQueue.size,
+        pending: this.cleanupQueue.pending,
       },
       schedulers: this.scheduledTasks.size,
     };
@@ -440,6 +591,77 @@ class WeatherOrchestratorSimple {
 
     this.logger.info(`🔄 Manual check triggered for ${model.name}`);
     await this.checkAndDownloadModel(modelKey, model);
+  }
+
+  // Déclencher un nettoyage manuel
+  async cleanupNow() {
+    this.logger.info("🧹 Manual cleanup triggered");
+    await this.cleanupOldFiles();
+  }
+
+  // Télécharger un fichier avec priorité
+  async downloadWithPriority(filePath, priority = 1) {
+    this.logger.info(`🚀 High priority download requested: ${filePath} [PRIORITY ${priority}]`);
+
+    // Parser le chemin pour extraire les informations
+    const pathParts = filePath.split('/');
+    if (pathParts.length < 6) {
+      throw new Error(`Invalid file path format: ${filePath}. Expected: modelKey/year/month/day/runHour/forecastTime.om`);
+    }
+
+    const modelKey = pathParts[0];
+    const year = pathParts[1];
+    const month = pathParts[2];
+    const day = pathParts[3];
+    const runHour = pathParts[4];
+    const fileName = pathParts[5];
+
+    // Trouver le modèle correspondant
+    const model = this.modelConfig.models[modelKey];
+    if (!model) {
+      throw new Error(`Model ${modelKey} not found in configuration`);
+    }
+
+    // Construire les chemins
+    const relativePath = `${modelKey}/${year}/${month}/${day}/${runHour}/${fileName}`;
+    const localPath = path.join(this.config.storage.cacheDir, relativePath);
+    const sourceUrl = `${model.baseUrl}/${year}/${month}/${day}/${runHour}/${fileName}`;
+
+    // Vérifier si le fichier existe déjà
+    const checkPath = this.fakeMode ? localPath.replace(/\.om$/, '.txt') : localPath;
+    if (await fs.pathExists(checkPath)) {
+      this.logger.info(`📁 File already exists, skipping: ${relativePath}`);
+      return false;
+    }
+
+    // Ajouter à la queue avec priorité élevée
+    this.logger.info(`📥 Adding high priority download to queue: ${relativePath}`);
+
+    await this.downloadQueue.add(async () => {
+      if (this.fakeMode) {
+        await this.fakeDownloadFile(sourceUrl, localPath, relativePath);
+      } else {
+        await this.downloadFile(sourceUrl, localPath, relativePath);
+      }
+    }, { priority });
+
+    return true;
+  }
+
+  // Obtenir des informations sur la queue de téléchargement
+  getQueueInfo() {
+    return {
+      downloadQueue: {
+        size: this.downloadQueue.size,
+        pending: this.downloadQueue.pending,
+        isPaused: this.downloadQueue.isPaused,
+      },
+      cleanupQueue: {
+        size: this.cleanupQueue.size,
+        pending: this.cleanupQueue.pending,
+        isPaused: this.cleanupQueue.isPaused,
+      }
+    };
   }
 }
 

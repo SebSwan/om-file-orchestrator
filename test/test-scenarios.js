@@ -131,6 +131,7 @@ class TestScenarios {
     await this.runTest('Subdirectory Creation', () => this.testSubdirectoryCreation());
     await this.runTest('Concurrent Writes', () => this.testConcurrentWrites());
     await this.runTest('Large File Handling', () => this.testLargeFileHandling());
+    await this.runTest('Priority System', () => this.testPrioritySystem());
 
     this.printSummary();
   }

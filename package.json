@@ -5,6 +5,7 @@
   "scripts": {
     "test": "node test/test-scenarios.js",
     "test:permissions": "node test/test-permissions.js",
+    "test:priority": "node test/test-priority.js",
     "test:quick": "node test/test-permissions.js",
     "start": "node index.js",
     "start:fake": "node index.js --fake",

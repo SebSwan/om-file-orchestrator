@@ -34,6 +34,21 @@ node test/test-scenarios.js
 - ✅ Écritures concurrentes
 - ✅ Gestion de gros fichiers
 
+### `test-priority.js`
+Test du système de priorités pour les téléchargements.
+
+**Utilisation :**
+```bash
+node test/test-priority.js
+```
+
+**Ce que ça teste :**
+- ✅ Téléchargements avec priorité 0 (normale)
+- ✅ Téléchargements avec priorité 1 (élevée)
+- ✅ Téléchargements avec priorité 2 (maximale)
+- ✅ Ordre d'exécution des priorités
+- ✅ Gestion de la queue avec priorités
+
 ## 🚀 Tests Rapides
 
 ### Test des permissions uniquement
@@ -49,6 +64,11 @@ node test/test-scenarios.js
 ### Test avec l'orchestrateur en mode fake
 ```bash
 npm run start:fake
+```
+
+### Test du système de priorités
+```bash
+npm run test:priority
 ```
 
 ## 📊 Interprétation des Résultats
