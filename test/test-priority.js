@@ -35,7 +35,7 @@ async function testPrioritySystem() {
 
     // Attendre que les téléchargements se terminent
     console.log('\n⏳ Waiting for downloads to complete...');
-    await new Promise(resolve => setTimeout(resolve, 25000)); // 25 secondes pour 4 fichiers
+    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 secondes pour 4 fichiers
 
     // Afficher les statistiques finales
     console.log('\n📊 Final Statistics:');
