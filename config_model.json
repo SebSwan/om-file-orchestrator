@@ -327,7 +327,7 @@
       "checkInterval": "*/1 * * * *",
       "fileExtension": ".om",
       "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-      "enabled": true,
+      "enabled": false,
       "retentionHours": 24
     },
     "meteofrance_arpege_europe": {
@@ -337,7 +337,7 @@
       "checkInterval": "*/1 * * * *",
       "fileExtension": ".om",
       "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-      "enabled": false,
+      "enabled": true,
       "retentionHours": 24
     },
     "meteofrance_arpege_europe_probabilities": {
@@ -357,7 +357,7 @@
       "checkInterval": "*/1 * * * *",
       "fileExtension": ".om",
       "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-      "enabled": false,
+      "enabled": true,
       "retentionHours": 24
     },
     "meteofrance_currents": {
@@ -387,7 +387,7 @@
       "checkInterval": "*/1 * * * *",
       "fileExtension": ".om",
       "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-      "enabled": false,
+      "enabled": true,
       "retentionHours": 24
     },
     "meteoswiss_icon_ch1": {
