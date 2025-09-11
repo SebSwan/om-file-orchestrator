@@ -1,6 +1,6 @@
 {
   "queue": {
-    "concurrency": 1,
+    "concurrency": 4,
     "interval": 1000,
     "intervalCap": 10,
     "timeout": 60000,

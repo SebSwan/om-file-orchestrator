@@ -235,11 +235,22 @@ class WeatherOrchestratorSimple {
 
       const response = await axios.get(statusUrl, {
         timeout: 10000, // 10 secondes timeout pour le check
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
       const statusData = response.data;
 
+      // Debug: afficher le statut complet
+      this.logger.debug(`Debug - Status URL: ${statusUrl}`);
+      this.logger.debug(`Debug - Response status: ${response.status}`);
+      this.logger.debug(`Debug - Completed status: ${statusData.completed}`);
+      this.logger.debug(`Debug - Last modified: ${statusData.last_modified_time}`);
+      this.logger.debug(`Debug - Reference time: ${statusData.reference_time}`);
+
       if (!statusData.completed) {
-        this.logger.info(`⏳ Model ${model.name} is not completed yet`);
+        this.logger.info(`⏳ Model ${model.name} is not completed yet (completed: ${statusData.completed}, last_modified: ${statusData.last_modified_time})`);
         return;
       }
 

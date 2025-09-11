@@ -157,7 +157,7 @@
       "checkInterval": "*/1 * * * *",
       "fileExtension": ".om",
       "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-      "enabled": false,
+      "enabled": true,
       "retentionHours": 24
     },
     "dwd_icon_eu_eps": {
@@ -297,7 +297,7 @@
       "checkInterval": "*/1 * * * *",
       "fileExtension": ".om",
       "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-      "enabled": false,
+      "enabled": true,
       "retentionHours": 24
     },
     "meteofrance_arome_france0025_15min": {
@@ -317,7 +317,7 @@
       "checkInterval": "*/1 * * * *",
       "fileExtension": ".om",
       "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-      "enabled": false,
+      "enabled": true,
       "retentionHours": 24
     },
     "meteofrance_arome_france_hd_15min": {
@@ -327,7 +327,7 @@
       "checkInterval": "*/1 * * * *",
       "fileExtension": ".om",
       "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-      "enabled": false,
+      "enabled": true,
       "retentionHours": 24
     },
     "meteofrance_arpege_europe": {
