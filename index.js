@@ -6,12 +6,18 @@ const modelConfig = require("./config_model.json");
 let orchestrator;
 
 async function main() {
+  // Détecter le mode fake
+  const isFakeMode = process.argv.includes("--fake");
+
   console.log("🚀 Starting Weather Data Orchestrator POC");
   console.log("📌 No Database Required - Everything in Memory!");
+  if (isFakeMode) {
+    console.log("🎭 FAKE MODE ENABLED - No real downloads, creating empty .txt files");
+  }
   console.log("================================================");
 
-  // Créer l'orchestrateur
-  orchestrator = new WeatherOrchestrator(config, modelConfig);
+  // Créer l'orchestrateur avec le mode fake
+  orchestrator = new WeatherOrchestrator(config, modelConfig, isFakeMode);
 
   // Démarrer
   await orchestrator.start();

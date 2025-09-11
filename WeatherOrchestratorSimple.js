@@ -6,9 +6,10 @@ const path = require("path");
 const winston = require("winston");
 
 class WeatherOrchestratorSimple {
-  constructor(config, modelConfig) {
+  constructor(config, modelConfig, fakeMode = false) {
     this.config = config;
     this.modelConfig = modelConfig;
+    this.fakeMode = fakeMode;
     this.scheduledTasks = new Map();
 
     // Initialiser le logger
@@ -69,14 +70,62 @@ class WeatherOrchestratorSimple {
     });
   }
 
+  async testPermissions() {
+    this.logger.info("🔍 Testing write permissions...");
+
+    const testFilePath = path.join(this.config.storage.cacheDir, "test.txt");
+    const testContent = "Permission test - " + new Date().toISOString();
+
+    try {
+      // Test d'écriture
+      await fs.writeFile(testFilePath, testContent);
+      this.logger.debug(`✅ Write test successful: ${testFilePath}`);
+
+      // Test de lecture
+      const readContent = await fs.readFile(testFilePath, 'utf8');
+      if (readContent !== testContent) {
+        throw new Error("Read content doesn't match written content");
+      }
+      this.logger.debug(`✅ Read test successful: content matches`);
+
+      // Test de suppression
+      await fs.remove(testFilePath);
+      this.logger.debug(`✅ Delete test successful: ${testFilePath}`);
+
+      this.logger.info("✅ All permission tests passed - cache directory is writable");
+
+    } catch (error) {
+      this.logger.error("❌ Permission test failed!");
+      this.logger.error(`   Cache directory: ${this.config.storage.cacheDir}`);
+      this.logger.error(`   Test file: ${testFilePath}`);
+      this.logger.error(`   Error: ${error.message}`);
+
+      // Nettoyer le fichier test s'il existe encore
+      try {
+        await fs.remove(testFilePath);
+      } catch (cleanupError) {
+        this.logger.warn(`⚠️  Could not clean up test file: ${cleanupError.message}`);
+      }
+
+      throw new Error(`Permission test failed: ${error.message}`);
+    }
+  }
+
   async start() {
     this.logger.info(
       "🚀 Starting Weather Orchestrator (Simple Version - No MongoDB)..."
     );
 
+    if (this.fakeMode) {
+      this.logger.info("🎭 FAKE MODE: Downloads will be simulated with empty .txt files");
+    }
+
     // Créer les dossiers nécessaires
     await fs.ensureDir(this.config.storage.cacheDir);
     await fs.ensureDir(path.dirname(this.config.logging.file));
+
+    // Tester les permissions d'écriture
+    await this.testPermissions();
 
     // Programmer les tâches pour chaque modèle
     for (const [modelKey, model] of Object.entries(this.modelConfig.models)) {
@@ -205,7 +254,8 @@ class WeatherOrchestratorSimple {
     const localPath = path.join(this.config.storage.cacheDir, relativePath);
 
     // Vérifier si le fichier existe déjà
-    if (await fs.pathExists(localPath)) {
+    const checkPath = this.fakeMode ? localPath.replace(/\.om$/, '.txt') : localPath;
+    if (await fs.pathExists(checkPath)) {
       this.logger.debug(`📁 File already exists, skipping: ${relativePath}`);
       this.stats.filesSkipped++;
       return false;
@@ -216,7 +266,11 @@ class WeatherOrchestratorSimple {
 
     // Ajouter à la queue de téléchargement
     await this.downloadQueue.add(async () => {
-      await this.downloadFile(sourceUrl, localPath, relativePath);
+      if (this.fakeMode) {
+        await this.fakeDownloadFile(sourceUrl, localPath, relativePath);
+      } else {
+        await this.downloadFile(sourceUrl, localPath, relativePath);
+      }
     });
 
     return true;
@@ -312,6 +366,41 @@ class WeatherOrchestratorSimple {
         );
       }
 
+      throw error;
+    }
+  }
+
+  async fakeDownloadFile(sourceUrl, localPath, relativePath) {
+    const startTime = Date.now();
+
+    try {
+      this.logger.info(`🎭 [FAKE] Simulating download: ${relativePath}`);
+
+      // Créer le dossier si nécessaire
+      await fs.ensureDir(path.dirname(localPath));
+
+      // Remplacer l'extension .om par .txt pour le fichier fake
+      const fakePath = localPath.replace(/\.om$/, '.txt');
+
+      // Créer un fichier vide
+      await fs.writeFile(fakePath, '');
+
+      // Simuler le temps de téléchargement (20 secondes)
+      this.logger.debug(`🎭 [FAKE] Waiting 20 seconds to simulate download...`);
+      await new Promise(resolve => setTimeout(resolve, 20000));
+
+      const duration = Date.now() - startTime;
+
+      this.stats.filesDownloaded++;
+      this.logger.info(
+        `✅ [FAKE] Simulated download: ${relativePath.replace(/\.om$/, '.txt')} (0 bytes in ${duration}ms)`
+      );
+    } catch (error) {
+      this.stats.errors++;
+      this.logger.error(
+        `❌ [FAKE] Failed to simulate download ${relativePath}:`,
+        error.message
+      );
       throw error;
     }
   }
