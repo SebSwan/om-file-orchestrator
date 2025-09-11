@@ -37,7 +37,16 @@ The orchestrator supports 50+ weather models including:
 - Node.js 16+
 - npm or yarn
 
-### Setup
+### As a Library (Recommended)
+```bash
+# Install from npm
+npm install om-file-orchestrator
+
+# Or install from GitHub
+npm install github:Sebswan/om-file-orchestrator
+```
+
+### As a Standalone Application
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -86,7 +95,35 @@ Each model can be configured with:
 
 ## 🚀 Usage
 
-### Basic Usage
+### As a Library
+```javascript
+const { createOrchestratorWithDefaults } = require('om-file-orchestrator');
+
+// Create orchestrator with defaults
+const orchestrator = createOrchestratorWithDefaults({
+  cacheDir: './weather-cache',
+  concurrency: 2,
+  logLevel: 'info',
+  fakeMode: false
+});
+
+// Start orchestrator
+await orchestrator.start();
+
+// Download file with priority
+await orchestrator.downloadWithPriority(
+  'dwd_icon_d2/2025/09/11/0600Z/2025-09-11T0600.om',
+  1 // High priority
+);
+
+// Get statistics
+const stats = orchestrator.getStats();
+
+// Stop orchestrator
+await orchestrator.stop();
+```
+
+### As a Standalone Application
 ```bash
 # Start the orchestrator
 npm start
@@ -96,6 +133,14 @@ npm run dev
 
 # Start in fake mode (no real downloads)
 npm run start:fake
+```
+
+### Examples
+```bash
+# Run examples
+npm run example:simple      # Basic usage example
+npm run example:fastify     # Fastify integration example
+npm run example:custom      # Custom configuration example
 ```
 
 ### Priority Downloads

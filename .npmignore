@@ -1,0 +1,30 @@
+# Development files
+.git/
+.gitignore
+*.log
+logs/
+cache/
+test/
+examples/
+setup.sh
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Documentation (keep README.md)
+docs/
+
+# Development dependencies
+node_modules/
+

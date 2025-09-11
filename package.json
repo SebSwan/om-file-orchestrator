@@ -1,7 +1,11 @@
 {
   "name": "om-file-orchestrator",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "A powerful Node.js library for automatically downloading and managing weather data files from OpenMeteo's spatial data API",
+  "main": "lib/index.js",
+  "bin": {
+    "om-orchestrator": "./index.js"
+  },
   "scripts": {
     "test": "node test/test-scenarios.js",
     "test:permissions": "node test/test-permissions.js",
@@ -10,11 +14,33 @@
     "start": "node index.js",
     "start:fake": "node index.js --fake",
     "dev": "node index.js --immediate",
-    "setup": "chmod +x setup.sh && ./setup.sh"
+    "setup": "chmod +x setup.sh && ./setup.sh",
+    "example:simple": "node examples/simple-usage.js",
+    "example:fastify": "node examples/fastify-integration.js",
+    "example:custom": "node examples/custom-config.js"
   },
-  "author": "",
+  "author": "Sebastien Etienne <thespotsguru@gmail.com>",
   "license": "ISC",
-  "description": "",
+  "keywords": [
+    "weather",
+    "meteorology",
+    "openmeteo",
+    "data-download",
+    "orchestrator",
+    "automation",
+    "nodejs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SebSwan/om-file-orchestrator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SebSwan/om-file-orchestrator/issues"
+  },
+  "homepage": "https://github.com/SebSwan/om-file-orchestrator#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "dependencies": {
     "axios": "^1.11.0",
     "fs-extra": "^11.3.1",
