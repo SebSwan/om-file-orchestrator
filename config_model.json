@@ -1,5 +1,125 @@
 {
   "models": {
+    "cams_europe": {
+      "name": "CAMS Europe",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/cams_europe",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "cams_global": {
+      "name": "CAMS Global",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/cams_global",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "cams_global_greenhouse_gases": {
+      "name": "CAMS Global Greenhouse Gases",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/cams_global_greenhouse_gases",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "cma_grapes_global": {
+      "name": "CMA GRAPES Global",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/cma_grapes_global",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "cmc_gem_gdps": {
+      "name": "CMC GEM GDPS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/cmc_gem_gdps",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "cmc_gem_geps": {
+      "name": "CMC GEM GEPS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/cmc_gem_geps",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "cmc_gem_hrdps": {
+      "name": "CMC GEM HRDPS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/cmc_gem_hrdps",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "cmc_gem_rdps": {
+      "name": "CMC GEM RDPS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/cmc_gem_rdps",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "dmi_harmonie_arome_europe": {
+      "name": "DMI HARMONIE AROME Europe",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dmi_harmonie_arome_europe",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "dwd_ewam": {
+      "name": "DWD EWAM",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_ewam",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "dwd_gwam": {
+      "name": "DWD GWAM",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_gwam",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "dwd_icon": {
+      "name": "DWD ICON",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_icon",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
     "dwd_icon_d2": {
       "name": "DWD ICON D2",
       "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_icon_d2",
@@ -7,7 +127,448 @@
       "checkInterval": "*/1 * * * *",
       "fileExtension": ".om",
       "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-      "enabled": true
+      "enabled": true,
+      "retentionHours": 24
+    },
+    "dwd_icon_d2_eps": {
+      "name": "DWD ICON D2 EPS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_icon_d2_eps",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "dwd_icon_eps": {
+      "name": "DWD ICON EPS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_icon_eps",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "dwd_icon_eu": {
+      "name": "DWD ICON EU",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_icon_eu",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "dwd_icon_eu_eps": {
+      "name": "DWD ICON EU EPS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_icon_eu_eps",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ecmwf_aifs025_ensemble": {
+      "name": "ECMWF AIFS025 Ensemble",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ecmwf_aifs025_ensemble",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ecmwf_aifs025_single": {
+      "name": "ECMWF AIFS025 Single",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ecmwf_aifs025_single",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ecmwf_ifs025": {
+      "name": "ECMWF IFS025",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ecmwf_ifs025",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ecmwf_ifs025_ensemble": {
+      "name": "ECMWF IFS025 Ensemble",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ecmwf_ifs025_ensemble",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ecmwf_wam025": {
+      "name": "ECMWF WAM025",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ecmwf_wam025",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "italia_meteo_arpae_icon_2i": {
+      "name": "Italia Meteo ARPAE ICON 2I",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/italia_meteo_arpae_icon_2i",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "jma_gsm": {
+      "name": "JMA GSM",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/jma_gsm",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "jma_msm": {
+      "name": "JMA MSM",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/jma_msm",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "kma_gdps": {
+      "name": "KMA GDPS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/kma_gdps",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "kma_ldps": {
+      "name": "KMA LDPS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/kma_ldps",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "knmi_harmonie_arome_europe": {
+      "name": "KNMI HARMONIE AROME Europe",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/knmi_harmonie_arome_europe",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "knmi_harmonie_arome_netherlands": {
+      "name": "KNMI HARMONIE AROME Netherlands",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/knmi_harmonie_arome_netherlands",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteofrance_arome_france0025": {
+      "name": "MeteoFrance AROME France 0.025°",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteofrance_arome_france0025",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteofrance_arome_france0025_15min": {
+      "name": "MeteoFrance AROME France 0.025° 15min",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteofrance_arome_france0025_15min",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteofrance_arome_france_hd": {
+      "name": "MeteoFrance AROME France HD",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteofrance_arome_france_hd",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteofrance_arome_france_hd_15min": {
+      "name": "MeteoFrance AROME France HD 15min",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteofrance_arome_france_hd_15min",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteofrance_arpege_europe": {
+      "name": "MeteoFrance ARPEGE Europe",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteofrance_arpege_europe",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteofrance_arpege_europe_probabilities": {
+      "name": "MeteoFrance ARPEGE Europe Probabilities",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteofrance_arpege_europe_probabilities",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteofrance_arpege_world025": {
+      "name": "MeteoFrance ARPEGE World 0.25°",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteofrance_arpege_world025",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteofrance_currents": {
+      "name": "MeteoFrance Currents",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteofrance_currents",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteofrance_sea_surface_temperature": {
+      "name": "MeteoFrance Sea Surface Temperature",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteofrance_sea_surface_temperature",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteofrance_wave": {
+      "name": "MeteoFrance Wave",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteofrance_wave",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteoswiss_icon_ch1": {
+      "name": "MeteoSwiss ICON CH1",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteoswiss_icon_ch1",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteoswiss_icon_ch1_ensemble": {
+      "name": "MeteoSwiss ICON CH1 Ensemble",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteoswiss_icon_ch1_ensemble",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteoswiss_icon_ch2": {
+      "name": "MeteoSwiss ICON CH2",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteoswiss_icon_ch2",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "meteoswiss_icon_ch2_ensemble": {
+      "name": "MeteoSwiss ICON CH2 Ensemble",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/meteoswiss_icon_ch2_ensemble",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "metno_nordic_pp": {
+      "name": "MET Norway Nordic PP",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/metno_nordic_pp",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_gefs025": {
+      "name": "NCEP GEFS 0.25°",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_gefs025",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_gefs05": {
+      "name": "NCEP GEFS 0.5°",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_gefs05",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_gfs013": {
+      "name": "NCEP GFS 0.13°",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_gfs013",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_gfs025": {
+      "name": "NCEP GFS 0.25°",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_gfs025",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_gfs_graphcast025": {
+      "name": "NCEP GFS GraphCast 0.25°",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_gfs_graphcast025",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_gfswave016": {
+      "name": "NCEP GFS Wave 0.16°",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_gfswave016",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_gfswave025": {
+      "name": "NCEP GFS Wave 0.25°",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_gfswave025",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_hrrr_conus": {
+      "name": "NCEP HRRR CONUS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_hrrr_conus",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_hrrr_conus_15min": {
+      "name": "NCEP HRRR CONUS 15min",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_hrrr_conus_15min",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_nam_conus": {
+      "name": "NCEP NAM CONUS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_nam_conus",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ncep_nbm_conus": {
+      "name": "NCEP NBM CONUS",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ncep_nbm_conus",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ukmo_global_deterministic_10km": {
+      "name": "UKMO Global Deterministic 10km",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ukmo_global_deterministic_10km",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
+    },
+    "ukmo_uk_deterministic_2km": {
+      "name": "UKMO UK Deterministic 2km",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/ukmo_uk_deterministic_2km",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": false,
+      "retentionHours": 24
     }
   }
 }
