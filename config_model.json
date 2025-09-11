@@ -1,0 +1,13 @@
+{
+  "models": {
+    "dwd_icon_d2": {
+      "name": "DWD ICON D2",
+      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_icon_d2",
+      "statusFile": "/in-progress.json",
+      "checkInterval": "*/1 * * * *",
+      "fileExtension": ".om",
+      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
+      "enabled": true
+    }
+  }
+}

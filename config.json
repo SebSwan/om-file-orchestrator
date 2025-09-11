@@ -1,0 +1,17 @@
+{
+  "queue": {
+    "concurrency": 1,
+    "interval": 1000,
+    "intervalCap": 10,
+    "timeout": 60000,
+    "retries": 3
+  },
+  "storage": {
+    "cacheDir": "./cache",
+    "maxFileSize": 30971520
+  },
+  "logging": {
+    "level": "info",
+    "file": "./logs/orchestrator.log"
+  }
+}
