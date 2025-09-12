@@ -249,10 +249,10 @@ class WeatherOrchestratorSimple {
       this.logger.debug(`Debug - Last modified: ${statusData.last_modified_time}`);
       this.logger.debug(`Debug - Reference time: ${statusData.reference_time}`);
 
-      if (!statusData.completed) {
-        this.logger.info(`⏳ Model ${model.name} is not completed yet (completed: ${statusData.completed}, last_modified: ${statusData.last_modified_time})`);
-        return;
-      }
+      // if (!statusData.completed) {
+      //   this.logger.info(`⏳ Model ${model.name} is not completed yet (completed: ${statusData.completed}, last_modified: ${statusData.last_modified_time})`);
+      //   return;
+      // }
 
       this.logger.info(
         `📦 Found ${statusData.valid_times.length} valid times for ${model.name}`
