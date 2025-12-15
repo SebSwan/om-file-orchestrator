@@ -1,6 +1,6 @@
 {
   "name": "om-file-orchestrator",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A powerful Node.js library for automatically downloading and managing weather data files from OpenMeteo's spatial data API",
   "main": "lib/index.js",
   "bin": {

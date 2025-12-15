@@ -661,6 +661,11 @@ class WeatherOrchestratorSimple {
     };
   }
 
+  getPath(modelKey, timestamp) {
+      if (!this.pathCache) return null;
+      return this.pathCache.get(modelKey, timestamp);
+  }
+
   // Déclencher un check manuel
   async checkNow(modelKey) {
     const model = this.modelConfig.models[modelKey];
