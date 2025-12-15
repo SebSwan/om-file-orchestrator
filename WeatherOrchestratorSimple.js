@@ -3,7 +3,7 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 const winston = require("winston");
-const { open } = require("lmdb");
+const PathCache = require("./path_cache");
 
 const RETENTION_HOURS_CACHE_LMDB = 24;
 
@@ -175,24 +175,13 @@ class WeatherOrchestratorSimple {
     this.logger.info("✅ Weather Orchestrator started successfully");
     this.logger.info(`📅 Scheduled tasks: ${this.scheduledTasks.size}`);
 
-    // Init LMDB
+    // Initialiser le PathCache
     if (this.config.lmdb) {
-        this.logger.info("📦 Initializing LMDB...");
-        this.lmdb = open({
-            path: this.config.lmdb.path,
-            compression: true,
-            mapSize: this.config.lmdb.mapSize || 104857600,
-            maxDbs: 60 // Allow for multiple model DBs (45+ models)
-        });
+        this.pathCache = new PathCache(this.config, this.logger);
+        await this.pathCache.init(this.modelConfig);
 
-        // Open named databases for each model to keep things clean
-        this.dbs = {};
-        for(const modelKey of Object.keys(this.modelConfig.models)) {
-             this.dbs[modelKey] = this.lmdb.openDB({
-                 name: modelKey
-             });
-        }
-        this.logger.info("✅ LMDB initialized");
+        // Rebuild index from existing files
+        await this.pathCache.rebuild(this.modelConfig, this.fakeMode);
     }
   }
 
@@ -384,7 +373,7 @@ class WeatherOrchestratorSimple {
   }
 
   async updateIndex(relativePath, localPath) {
-      if (!this.lmdb) return;
+      if (!this.pathCache) return;
 
       try {
         // relativePath: modelKey/year/month/day/runHour/forecastTime.om
@@ -392,34 +381,13 @@ class WeatherOrchestratorSimple {
         const modelKey = parts[0];
         const filename = parts[parts.length - 1];
         const timestamp = filename.replace('.om', '');
-        const fullPath = localPath;
 
-        // Get the specific DB for this model
-        const db = this.dbs[modelKey];
-        if (!db) {
-            this.logger.warn(`⚠️ No LMDB database found for model: ${modelKey}`);
-            return;
+        const success = await this.pathCache.set(modelKey, timestamp, localPath);
+        if (success) {
+            this.stats.dbUpdates++;
+        } else {
+            this.stats.dbErrors++;
         }
-
-         // 1. Get old path
-         const oldPath = db.get(timestamp);
-
-         // 2. Put new path
-         await db.put(timestamp, fullPath);
-         this.stats.dbUpdates++;
-         this.logger.debug(`LMDB updated for model: ${modelKey}, key: ${timestamp}`);
-
-         // 3. Delete old file if different and exists
-         if (oldPath && oldPath !== fullPath) {
-             try {
-                 if(await fs.pathExists(oldPath)) {
-                    await fs.remove(oldPath);
-                    this.logger.info(`🗑️ Deleted old version: ${oldPath}`);
-                 }
-             } catch (delError) {
-                 this.logger.warn(`⚠️ Failed to delete old file ${oldPath}: ${delError.message}`);
-             }
-         }
 
       } catch (err) {
           this.stats.dbErrors++;
@@ -595,15 +563,8 @@ class WeatherOrchestratorSimple {
     let deletedCount = 0;
 
     // Nettoyer également les clés LMDB obsolètes
-    if (this.lmdb && this.dbs[modelKey]) {
-        try {
-            const keysDeleted = await this.cleanupModelKeys(modelKey, model, cutoffTime);
-            if (keysDeleted > 0) {
-               this.logger.info(`🧹 Cleaned ${keysDeleted} LMDB keys for ${model.name}`);
-            }
-        } catch (dbError) {
-             this.logger.error(`❌ Error cleaning LMDB keys for ${model.name}:`, dbError);
-        }
+    if (this.pathCache) {
+        await this.pathCache.cleanup(modelKey, model.name);
     }
 
     // Check if directory exists
@@ -617,60 +578,6 @@ class WeatherOrchestratorSimple {
     });
 
     return deletedCount;
-  }
-
-  async cleanupModelKeys(modelKey, model, cutoffTime) {
-      const db = this.dbs[modelKey];
-      if (!db) return 0;
-
-      let deletedCount = 0;
-      const keysToDelete = [];
-
-      try {
-        // 1. Collect keys to delete
-        for (const { key } of db.getRange()) {
-            try {
-                // key format: 2025-12-14T2100
-                // Simple date parsing
-                const year = parseInt(key.substring(0, 4));
-                const month = parseInt(key.substring(5, 7)) - 1;
-                const day = parseInt(key.substring(8, 10));
-                const hour = parseInt(key.substring(11, 13));
-                const minute = parseInt(key.substring(13, 15));
-
-                const keyDate = new Date(Date.UTC(year, month, day, hour, minute));
-
-                if (keyDate.getTime() < cutoffTime) {
-                    keysToDelete.push(key);
-                } else {
-                    // Since keys are sorted chronologically, once we hit a new enough key,
-                    // we can stop scanning to save performance.
-                    break;
-                }
-            } catch (e) {
-                // Skip malformed keys
-                this.logger.warn(`⚠️ Could not parse LMDB key for ${modelKey}: ${key}. Skipping.`);
-                continue;
-            }
-        }
-
-        // 2. Delete collected keys
-        if (keysToDelete.length > 0) {
-            this.logger.debug(`🗑️ Deleting ${keysToDelete.length} old LMDB keys for ${modelKey}...`);
-            for (const key of keysToDelete) {
-                 await db.remove(key);
-                 deletedCount++;
-                 this.logger.debug(`🗑️ Removed old LMDB key for ${modelKey}: ${key}`);
-            }
-        } else {
-            this.logger.debug(`🗑️ No old LMDB keys to delete for ${modelKey}.`);
-        }
-      } catch (err) {
-          this.logger.error(`❌ Error iterating/deleting keys for ${modelKey}:`, err.message);
-          throw err;
-      }
-
-      return deletedCount;
   }
 
   async cleanupDirectory(dirPath, cutoffTime, modelKey, model, onDeleted) {
@@ -732,9 +639,8 @@ class WeatherOrchestratorSimple {
     await this.downloadQueue.onIdle();
     await this.cleanupQueue.onIdle();
 
-    if (this.lmdb) {
-        await this.lmdb.close();
-        this.logger.info("db LMDB closed");
+    if (this.pathCache) {
+        await this.pathCache.close();
     }
 
     this.logger.info("👋 Weather Orchestrator stopped");

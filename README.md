@@ -183,7 +183,12 @@ npm run test:quick
 npm run test:priority
 
 # Test specific scenarios
+# Test specific scenarios
 npm run test:permissions
+
+# Verify LMDB logic
+node test/verify-lmdb-crud.js     # Test Set/Get/Cleanup
+node test/verify-lmdb-rebuild.js  # Test Index Rebuild
 ```
 
 ### Test Coverage
@@ -245,10 +250,12 @@ The orchestrator provides real-time statistics:
 - **Priority Logging**: Clear indication of priority downloads
 
 ### Caching System (LMDB)
+### Caching System (LMDB)
 - **Embedded Database**: Uses LMDB for high-performance, serverless caching
 - **Path Resolution**: Stores mappings between timestamps and file paths
-- **Automatic Updates**: Updates cache immediately upon successful download
-- **Consistency**: Handles cleanup of old file paths when updated
+- **Persistence**: Rebuilds index from disk on startup to ensure consistency across deployments
+- **Memory Efficient**: Separate databases per model
+- **Automatic Cleanup**: Removes expired keys synchronously with file cleanup
 
 ## 🐛 Troubleshooting
 
