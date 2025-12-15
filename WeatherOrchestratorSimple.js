@@ -1,9 +1,11 @@
-const PQueue = require("p-queue").default;
 const cron = require("node-cron");
 const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 const winston = require("winston");
+const { open } = require("lmdb");
+
+const RETENTION_HOURS_CACHE_LMDB = 24;
 
 class WeatherOrchestratorSimple {
   constructor(config, modelConfig, fakeMode = false) {
@@ -15,22 +17,6 @@ class WeatherOrchestratorSimple {
     // Initialiser le logger
     this.setupLogger();
 
-    // Initialiser la queue de téléchargement avec support des priorités
-    this.downloadQueue = new PQueue({
-      concurrency: config.queue.concurrency,
-      interval: config.queue.interval,
-      intervalCap: config.queue.intervalCap,
-      timeout: config.queue.timeout,
-      throwOnTimeout: true,
-    });
-
-    // Initialiser la queue de suppression
-    this.cleanupQueue = new PQueue({
-      concurrency: 2, // Limiter les suppressions simultanées
-      interval: 1000, // 1 seconde entre les suppressions
-      intervalCap: 10, // Max 10 suppressions par seconde
-    });
-
     // Stats
     this.stats = {
       filesChecked: 0,
@@ -41,10 +27,9 @@ class WeatherOrchestratorSimple {
       errors: 0,
       lastCheck: null,
       lastCleanup: null,
+      dbUpdates: 0,
+      dbErrors: 0
     };
-
-    // Setup des événements de queue
-    this.setupQueueEvents();
   }
 
   setupLogger() {
@@ -61,7 +46,7 @@ class WeatherOrchestratorSimple {
         new winston.transports.Console(),
         new winston.transports.File({
           filename: this.config.logging.file,
-          maxsize: 5242880, // 5MB
+          maxsize: 10485760, // 10MB
           maxFiles: 5,
         }),
       ],
@@ -109,6 +94,19 @@ class WeatherOrchestratorSimple {
 
       this.logger.info("✅ All permission tests passed - cache directory is writable");
 
+      this.logger.info("✅ All permission tests passed - cache directory is writable");
+
+      // Verify LMDB configuration and path creation
+      if (this.config.lmdb) {
+          try {
+              await fs.ensureDir(this.config.lmdb.path);
+              this.logger.info(`✅ LMDB directory ready: ${this.config.lmdb.path}`);
+          } catch (err) {
+              this.logger.error(`❌ Failed to create LMDB directory: ${err.message}`);
+              throw err;
+          }
+      }
+
     } catch (error) {
       this.logger.error("❌ Permission test failed!");
       this.logger.error(`   Cache directory: ${this.config.storage.cacheDir}`);
@@ -130,6 +128,28 @@ class WeatherOrchestratorSimple {
     this.logger.info(
       "🚀 Starting Weather Orchestrator (Simple Version - No MongoDB)..."
     );
+
+    // Dynamic import of p-queue
+    const { default: PQueue } = await import("p-queue");
+
+    // Initialiser la queue de téléchargement avec support des priorités
+    this.downloadQueue = new PQueue({
+      concurrency: this.config.queue.concurrency,
+      interval: this.config.queue.interval,
+      intervalCap: this.config.queue.intervalCap,
+      timeout: this.config.queue.timeout,
+      throwOnTimeout: true,
+    });
+
+    // Initialiser la queue de suppression
+    this.cleanupQueue = new PQueue({
+      concurrency: 2, // Limiter les suppressions simultanées
+      interval: 1000, // 1 seconde entre les suppressions
+      intervalCap: 10, // Max 10 suppressions par seconde
+    });
+
+    // Setup des événements de queue
+    this.setupQueueEvents();
 
     if (this.fakeMode) {
       this.logger.info("🎭 FAKE MODE: Downloads will be simulated with empty .txt files");
@@ -154,6 +174,26 @@ class WeatherOrchestratorSimple {
 
     this.logger.info("✅ Weather Orchestrator started successfully");
     this.logger.info(`📅 Scheduled tasks: ${this.scheduledTasks.size}`);
+
+    // Init LMDB
+    if (this.config.lmdb) {
+        this.logger.info("📦 Initializing LMDB...");
+        this.lmdb = open({
+            path: this.config.lmdb.path,
+            compression: true,
+            mapSize: this.config.lmdb.mapSize || 104857600,
+            maxDbs: 60 // Allow for multiple model DBs (45+ models)
+        });
+
+        // Open named databases for each model to keep things clean
+        this.dbs = {};
+        for(const modelKey of Object.keys(this.modelConfig.models)) {
+             this.dbs[modelKey] = this.lmdb.openDB({
+                 name: modelKey
+             });
+        }
+        this.logger.info("✅ LMDB initialized");
+    }
   }
 
   scheduleModel(modelKey, model) {
@@ -327,14 +367,64 @@ class WeatherOrchestratorSimple {
     this.logger.debug(`📥 Queuing download${priorityLabel}: ${relativePath}`);
 
     await this.downloadQueue.add(async () => {
-      if (this.fakeMode) {
-        await this.fakeDownloadFile(sourceUrl, localPath, relativePath);
-      } else {
-        await this.downloadFile(sourceUrl, localPath, relativePath);
+      try {
+        if (this.fakeMode) {
+          await this.fakeDownloadFile(sourceUrl, localPath, relativePath);
+        } else {
+          await this.downloadFile(sourceUrl, localPath, relativePath);
+        }
+        await this.updateIndex(relativePath, localPath);
+      } catch (e) {
+        this.logger.error(`Failed to process ${relativePath}: ${e.message}`);
+        throw e;
       }
     }, { priority });
 
     return true;
+  }
+
+  async updateIndex(relativePath, localPath) {
+      if (!this.lmdb) return;
+
+      try {
+        // relativePath: modelKey/year/month/day/runHour/forecastTime.om
+        const parts = relativePath.split('/');
+        const modelKey = parts[0];
+        const filename = parts[parts.length - 1];
+        const timestamp = filename.replace('.om', '');
+        const fullPath = localPath;
+
+        // Get the specific DB for this model
+        const db = this.dbs[modelKey];
+        if (!db) {
+            this.logger.warn(`⚠️ No LMDB database found for model: ${modelKey}`);
+            return;
+        }
+
+         // 1. Get old path
+         const oldPath = db.get(timestamp);
+
+         // 2. Put new path
+         await db.put(timestamp, fullPath);
+         this.stats.dbUpdates++;
+         this.logger.debug(`LMDB updated for model: ${modelKey}, key: ${timestamp}`);
+
+         // 3. Delete old file if different and exists
+         if (oldPath && oldPath !== fullPath) {
+             try {
+                 if(await fs.pathExists(oldPath)) {
+                    await fs.remove(oldPath);
+                    this.logger.info(`🗑️ Deleted old version: ${oldPath}`);
+                 }
+             } catch (delError) {
+                 this.logger.warn(`⚠️ Failed to delete old file ${oldPath}: ${delError.message}`);
+             }
+         }
+
+      } catch (err) {
+          this.stats.dbErrors++;
+          this.logger.error(`❌ LMDB update failed: ${err.message}`);
+      }
   }
 
   async downloadFile(sourceUrl, localPath, relativePath) {
@@ -406,6 +496,8 @@ class WeatherOrchestratorSimple {
       this.logger.info(
         `✅ Downloaded: ${relativePath} (${sizeMB} MB in ${duration}ms)`
       );
+
+
     } catch (error) {
       this.stats.errors++;
 
@@ -498,15 +590,26 @@ class WeatherOrchestratorSimple {
 
   async cleanupModelFiles(modelKey, model) {
     const modelDir = path.join(this.config.storage.cacheDir, modelKey);
+    const retentionMs = RETENTION_HOURS_CACHE_LMDB * 60 * 60 * 1000; // Global retention
+    const cutoffTime = Date.now() - retentionMs;
+    let deletedCount = 0;
 
-    // Vérifier si le dossier du modèle existe
+    // Nettoyer également les clés LMDB obsolètes
+    if (this.lmdb && this.dbs[modelKey]) {
+        try {
+            const keysDeleted = await this.cleanupModelKeys(modelKey, model, cutoffTime);
+            if (keysDeleted > 0) {
+               this.logger.info(`🧹 Cleaned ${keysDeleted} LMDB keys for ${model.name}`);
+            }
+        } catch (dbError) {
+             this.logger.error(`❌ Error cleaning LMDB keys for ${model.name}:`, dbError);
+        }
+    }
+
+    // Check if directory exists
     if (!(await fs.pathExists(modelDir))) {
       return 0;
     }
-
-    const retentionMs = model.retentionHours * 60 * 60 * 1000; // Convertir en millisecondes
-    const cutoffTime = Date.now() - retentionMs;
-    let deletedCount = 0;
 
     // Parcourir récursivement le dossier du modèle
     await this.cleanupDirectory(modelDir, cutoffTime, modelKey, model, (count) => {
@@ -514,6 +617,60 @@ class WeatherOrchestratorSimple {
     });
 
     return deletedCount;
+  }
+
+  async cleanupModelKeys(modelKey, model, cutoffTime) {
+      const db = this.dbs[modelKey];
+      if (!db) return 0;
+
+      let deletedCount = 0;
+      const keysToDelete = [];
+
+      try {
+        // 1. Collect keys to delete
+        for (const { key } of db.getRange()) {
+            try {
+                // key format: 2025-12-14T2100
+                // Simple date parsing
+                const year = parseInt(key.substring(0, 4));
+                const month = parseInt(key.substring(5, 7)) - 1;
+                const day = parseInt(key.substring(8, 10));
+                const hour = parseInt(key.substring(11, 13));
+                const minute = parseInt(key.substring(13, 15));
+
+                const keyDate = new Date(Date.UTC(year, month, day, hour, minute));
+
+                if (keyDate.getTime() < cutoffTime) {
+                    keysToDelete.push(key);
+                } else {
+                    // Since keys are sorted chronologically, once we hit a new enough key,
+                    // we can stop scanning to save performance.
+                    break;
+                }
+            } catch (e) {
+                // Skip malformed keys
+                this.logger.warn(`⚠️ Could not parse LMDB key for ${modelKey}: ${key}. Skipping.`);
+                continue;
+            }
+        }
+
+        // 2. Delete collected keys
+        if (keysToDelete.length > 0) {
+            this.logger.debug(`🗑️ Deleting ${keysToDelete.length} old LMDB keys for ${modelKey}...`);
+            for (const key of keysToDelete) {
+                 await db.remove(key);
+                 deletedCount++;
+                 this.logger.debug(`🗑️ Removed old LMDB key for ${modelKey}: ${key}`);
+            }
+        } else {
+            this.logger.debug(`🗑️ No old LMDB keys to delete for ${modelKey}.`);
+        }
+      } catch (err) {
+          this.logger.error(`❌ Error iterating/deleting keys for ${modelKey}:`, err.message);
+          throw err;
+      }
+
+      return deletedCount;
   }
 
   async cleanupDirectory(dirPath, cutoffTime, modelKey, model, onDeleted) {
@@ -574,6 +731,11 @@ class WeatherOrchestratorSimple {
     // Attendre que les queues finissent
     await this.downloadQueue.onIdle();
     await this.cleanupQueue.onIdle();
+
+    if (this.lmdb) {
+        await this.lmdb.close();
+        this.logger.info("db LMDB closed");
+    }
 
     this.logger.info("👋 Weather Orchestrator stopped");
   }
@@ -649,10 +811,16 @@ class WeatherOrchestratorSimple {
     this.logger.info(`📥 Adding high priority download to queue: ${relativePath}`);
 
     await this.downloadQueue.add(async () => {
-      if (this.fakeMode) {
-        await this.fakeDownloadFile(sourceUrl, localPath, relativePath);
-      } else {
-        await this.downloadFile(sourceUrl, localPath, relativePath);
+      try {
+        if (this.fakeMode) {
+          await this.fakeDownloadFile(sourceUrl, localPath, relativePath);
+        } else {
+          await this.downloadFile(sourceUrl, localPath, relativePath);
+        }
+        await this.updateIndex(relativePath, localPath);
+      } catch (e) {
+        this.logger.error(`Failed to process priority download ${relativePath}: ${e.message}`);
+        throw e;
       }
     }, { priority });
 

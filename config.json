@@ -8,10 +8,14 @@
   },
   "storage": {
     "cacheDir": "./cache",
-    "maxFileSize": 30971520
+    "maxFileSize": 104857600
   },
   "logging": {
     "level": "info",
     "file": "./logs/orchestrator.log"
+  },
+  "lmdb": {
+    "path": "./cache/lmdb",
+    "mapSize": 104857600
   }
 }

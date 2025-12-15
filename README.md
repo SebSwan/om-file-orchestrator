@@ -10,6 +10,7 @@ A powerful Node.js application for automatically downloading and managing weathe
 - **Priority Downloads**: Queue-based system with priority levels for urgent downloads
 - **Automatic Cleanup**: Configurable retention periods with automatic file cleanup
 - **Fake Mode**: Simulation mode for testing without actual downloads
+- **Local Caching**: LMDB-based caching for fast file path resolution
 - **Comprehensive Logging**: Detailed logging with Winston for monitoring and debugging
 
 ### Advanced Features
@@ -81,6 +82,10 @@ npm run test:quick
   "logging": {
     "level": "info",
     "file": "./logs/orchestrator.log"
+  },
+  "lmdb": {
+    "path": "./cache/lmdb",
+    "mapSize": 104857600
   }
 }
 ```
@@ -238,6 +243,12 @@ The orchestrator provides real-time statistics:
 - **Priority Levels**: 0 (normal), 1 (high), 2 (maximum)
 - **Queue Ordering**: Higher priority downloads processed first
 - **Priority Logging**: Clear indication of priority downloads
+
+### Caching System (LMDB)
+- **Embedded Database**: Uses LMDB for high-performance, serverless caching
+- **Path Resolution**: Stores mappings between timestamps and file paths
+- **Automatic Updates**: Updates cache immediately upon successful download
+- **Consistency**: Handles cleanup of old file paths when updated
 
 ## 🐛 Troubleshooting
 
