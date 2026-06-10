@@ -577,6 +577,15 @@ class WeatherOrchestratorSimple {
       deletedCount += count;
     });
 
+    // Réconciliation index ↔ disque : attendre la fin des suppressions en queue,
+    // puis purger les clés LMDB dont le fichier vient de disparaître (la suppression
+    // fichiers est mtime-based, cleanup() est validtime-based — sans ça, des clés
+    // mortes restent exposées pendant des heures)
+    if (this.pathCache) {
+      await this.cleanupQueue.onIdle();
+      await this.pathCache.sweepMissing(modelKey, model.name);
+    }
+
     return deletedCount;
   }
 

@@ -135,6 +135,43 @@ class PathCache {
       return deletedCount;
   }
 
+  /**
+   * Supprime les clés LMDB dont le fichier n'existe plus sur le disque.
+   * Nécessaire car la suppression des fichiers est basée sur le mtime (heure de
+   * téléchargement) alors que cleanup() est basé sur le valid time de la clé :
+   * un fichier meurt à mtime+retention, sa clé seulement à validtime+retention.
+   * Sans cette réconciliation, l'index expose des clés mortes pendant des heures
+   * (les consommateurs de getPath()/cache/all reçoivent alors des 502).
+   */
+  async sweepMissing(modelKey, modelName) {
+    if (!this.lmdb || !this.dbs[modelKey]) return 0;
+
+    const db = this.dbs[modelKey];
+    const staleKeys = [];
+
+    try {
+      // 1. Collecter les clés mortes (ne pas muter pendant l'itération du range)
+      for (const { key, value } of db.getRange()) {
+        if (typeof value !== 'string' || value.length === 0) continue;
+        if (!(await fs.pathExists(value))) {
+          staleKeys.push(key);
+        }
+      }
+
+      // 2. Supprimer
+      for (const key of staleKeys) {
+        await db.remove(key);
+        this.logger.debug(`🗑️ Removed stale LMDB key (file missing) for ${modelKey}: ${key}`);
+      }
+      if (staleKeys.length > 0) {
+        this.logger.info(`🧹 Removed ${staleKeys.length} stale LMDB keys (missing files) for ${modelName || modelKey}`);
+      }
+    } catch (err) {
+      this.logger.error(`❌ Error sweeping stale keys for ${modelKey}:`, err.message);
+    }
+    return staleKeys.length;
+  }
+
   async rebuild(modelConfigs, fakeMode = false) {
     if (!this.lmdb) return;
 
