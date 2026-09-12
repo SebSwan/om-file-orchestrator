@@ -17,21 +17,33 @@ class PathCache {
 
     this.logger.info("📦 Initializing LMDB...");
     try {
+        // Only open a database for models that are actually enabled.
+        // LMDB caps the number of open named databases (maxDbs); opening one per entry in
+        // the config file made that cap depend on the SIZE OF THE CONFIG rather than on
+        // what the orchestrator actually uses. A consumer listing 61 models but enabling 22
+        // hit MDB_DBS_FULL at startup, which leaves the cache empty and silently breaks
+        // every lookup. Models without an explicit `enabled` flag stay enabled (backwards
+        // compatible with configs predating the flag).
+        const modelKeys = Object.keys(modelConfigs.models).filter(
+            (key) => modelConfigs.models[key].enabled !== false
+        );
+
         this.lmdb = open({
             path: this.config.lmdb.path,
             compression: true,
             mapSize: this.config.lmdb.mapSize || 104857600,
-            maxDbs: 60 // Allow for multiple model DBs (45+ models)
+            // Headroom above what we open, overridable by the consumer.
+            maxDbs: this.config.lmdb.maxDbs || Math.max(60, modelKeys.length * 2)
         });
 
-        // Open named databases for each model
+        // Open named databases for each enabled model
         this.dbs = {};
-        for (const modelKey of Object.keys(modelConfigs.models)) {
+        for (const modelKey of modelKeys) {
             this.dbs[modelKey] = this.lmdb.openDB({
                 name: modelKey
             });
         }
-        this.logger.info("✅ LMDB initialized");
+        this.logger.info(`✅ LMDB initialized (${modelKeys.length} model DBs)`);
     } catch (err) {
         this.logger.error("❌ Failed to initialize LMDB:", err);
         throw err;
