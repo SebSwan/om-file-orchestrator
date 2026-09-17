@@ -2,8 +2,6 @@ const { open } = require("lmdb");
 const fs = require("fs-extra");
 const path = require("path");
 
-const RETENTION_HOURS_CACHE_LMDB = 24;
-
 class PathCache {
   constructor(config, logger) {
     this.config = config;
@@ -94,57 +92,48 @@ class PathCache {
     }
   }
 
-  async cleanup(modelKey, modelName) {
+  /**
+   * Retire la clé `timestamp` SI elle désigne encore `filePath` — appelé juste après la
+   * suppression du fichier, pour que l'index ne survive jamais à ce qu'il référence.
+   * La garde sur le chemin évite d'effacer une clé repointée sur un run plus récent.
+   */
+  async dropKeyForFile(modelKey, timestamp, filePath) {
+    const db = this.dbs[modelKey];
+    if (!db || db.get(timestamp) !== filePath) return false;
+    await db.remove(timestamp);
+    return true;
+  }
+
+  /**
+   * Supprime les clés dont l'ÉCHÉANCE est plus vieille que `retentionHours`.
+   * (La purge des fichiers, elle, se base sur leur mtime — voir cleanupModelFiles.)
+   */
+  async cleanup(modelKey, modelName, retentionHours) {
     if (!this.lmdb || !this.dbs[modelKey]) return 0;
 
-    const retentionMs = RETENTION_HOURS_CACHE_LMDB * 60 * 60 * 1000;
-    const cutoffTime = Date.now() - retentionMs;
-
-    let deletedCount = 0;
     const db = this.dbs[modelKey];
-    const keysToDelete = [];
+    // Les clés sont des `YYYY-MM-DDTHHMM` de largeur fixe : leur ordre lexicographique
+    // est chronologique, donc le cutoff formaté pareil borne le curseur nativement.
+    const cutoff = new Date(Date.now() - retentionHours * 60 * 60 * 1000).toISOString();
+    const cutoffKey = cutoff.slice(0, 13) + cutoff.slice(14, 16);
 
-      try {
-        // 1. Collect keys to delete
-        for (const { key } of db.getRange()) {
-            try {
-                // key format: 2025-12-14T2100
-                // Simple date parsing
-                const year = parseInt(key.substring(0, 4));
-                const month = parseInt(key.substring(5, 7)) - 1;
-                const day = parseInt(key.substring(8, 10));
-                const hour = parseInt(key.substring(11, 13));
-                const minute = parseInt(key.substring(13, 15));
-
-                const keyDate = new Date(Date.UTC(year, month, day, hour, minute));
-
-                if (keyDate.getTime() < cutoffTime) {
-                    keysToDelete.push(key);
-                } else {
-                    break;
-                }
-            } catch (e) {
-                this.logger.warn(`⚠️ Could not parse LMDB key for ${modelKey}: ${key}. Skipping.`);
-                continue;
-            }
-        }
-
-        // 2. Delete collected keys
-        if (keysToDelete.length > 0) {
-            this.logger.debug(`🗑️ Deleting ${keysToDelete.length} old LMDB keys for ${modelKey}...`);
-            for (const key of keysToDelete) {
-                 await db.remove(key);
-                 deletedCount++;
-                 this.logger.debug(`🗑️ Removed old LMDB key for ${modelKey}: ${key}`);
-            }
-            this.logger.info(`🧹 Cleaned ${deletedCount} LMDB keys for ${modelName}`);
-        } else {
-            this.logger.debug(`🗑️ No old LMDB keys to delete for ${modelKey}.`);
-        }
-      } catch (err) {
-          this.logger.error(`❌ Error iterating/deleting keys for ${modelKey}:`, err.message);
+    try {
+      const keysToDelete = [...db.getKeys({ end: cutoffKey })];
+      if (keysToDelete.length === 0) {
+        this.logger.debug(`🗑️ No old LMDB keys to delete for ${modelKey}.`);
+        return 0;
       }
-      return deletedCount;
+      this.logger.debug(`🗑️ Deleting ${keysToDelete.length} old LMDB keys for ${modelKey}...`);
+      // Sans `await` par clé, lmdb-js regroupe le tout dans une seule transaction.
+      let last;
+      for (const key of keysToDelete) last = db.remove(key);
+      await last;
+      this.logger.info(`🧹 Cleaned ${keysToDelete.length} LMDB keys for ${modelName}`);
+      return keysToDelete.length;
+    } catch (err) {
+      this.logger.error(`❌ Error iterating/deleting keys for ${modelKey}:`, err.message);
+      return 0;
+    }
   }
 
   async rebuild(modelConfigs, fakeMode = false) {
@@ -154,6 +143,9 @@ class PathCache {
     let totalKeysRestored = 0;
 
     for (const [modelKey, model] of Object.entries(modelConfigs.models)) {
+        // `init()` n'ouvre une base que pour les modèles activés : sans elle, scanAndIndex
+        // parcourrait l'arborescence pour jeter le résultat.
+        if (!this.dbs[modelKey]) continue;
         const modelDir = path.join(this.config.storage.cacheDir, modelKey);
         if (await fs.pathExists(modelDir)) {
              try {
@@ -167,42 +159,61 @@ class PathCache {
              }
         }
     }
-    this.logger.info(`✅ LMDB index rebuild completed. Total keys restored: ${totalKeysRestored}`);
+    const orphans = await this.pruneMissingFiles();
+    this.logger.info(
+      `✅ LMDB index rebuild completed. Total keys restored: ${totalKeysRestored}`
+      + (orphans ? `, ${orphans} orphan keys dropped` : "")
+    );
+  }
+
+  /**
+   * Retire les clés dont le fichier n'existe plus. Sans ça, un fichier purgé sur sa mtime
+   * laisse une entrée d'index que le consommateur résout en chemin mort.
+   */
+  async pruneMissingFiles() {
+    let dropped = 0;
+    for (const [modelKey, db] of Object.entries(this.dbs)) {
+      const morts = [];
+      for (const { key, value } of db.getRange()) {
+        if (!(await fs.pathExists(value))) morts.push(key);
+      }
+      let last;
+      for (const key of morts) last = db.remove(key);
+      if (last) await last;
+      if (morts.length) {
+        this.logger.info(`🧹 Dropped ${morts.length} orphan LMDB keys for ${modelKey}`);
+        dropped += morts.length;
+      }
+    }
+    return dropped;
   }
 
   async scanAndIndex(dirPath, modelKey, fakeMode) {
       let count = 0;
-      const items = await fs.readdir(dirPath);
+      // withFileTypes : le type d'entrée est gratuit, un fs.stat par fichier ne l'est pas
+      // (et l'ancienneté ne sert pas ici, contrairement à la purge).
+      const items = await fs.readdir(dirPath, { withFileTypes: true });
+      const db = this.dbs[modelKey];
+      let last;
 
       for (const item of items) {
-          const fullPath = path.join(dirPath, item);
-          const stats = await fs.stat(fullPath);
+          const fullPath = path.join(dirPath, item.name);
 
-          if (stats.isDirectory()) {
+          if (item.isDirectory()) {
               count += await this.scanAndIndex(fullPath, modelKey, fakeMode);
-          } else {
-              // Check extension
-              let isDataFile = item.endsWith('.om');
-              if (fakeMode && item.endsWith('.txt')) {
-                  isDataFile = true;
-              }
+              continue;
+          }
+          const isDataFile = item.name.endsWith('.om') || (fakeMode && item.name.endsWith('.txt'));
+          if (!isDataFile || !db) continue;
 
-              if (isDataFile) {
-                  // Extract timestamp
-                  const filename = item;
-                  const extension = path.extname(filename);
-                  const timestamp = filename.replace(extension, '');
-
-                  const db = this.dbs[modelKey];
-                  if (db) {
-                      if (!db.get(timestamp)) {
-                          await db.put(timestamp, fullPath);
-                          count++;
-                      }
-                  }
-              }
+          // Clé = nom de fichier sans extension (ex. 2025-12-14T2100)
+          const timestamp = item.name.replace(path.extname(item.name), '');
+          if (!db.get(timestamp)) {
+              last = db.put(timestamp, fullPath); // groupé en une transaction, cf. cleanup
+              count++;
           }
       }
+      if (last) await last;
       return count;
   }
 }

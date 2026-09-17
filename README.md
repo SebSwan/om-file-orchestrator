@@ -93,7 +93,13 @@ npm run test:quick
 ### Model Configuration (`config_model.json`)
 Each model can be configured with:
 - `enabled`: Enable/disable the model
-- `retentionHours`: File retention period in hours
+- `managed`: `false` for a model fed by an external process — its files are still
+  indexed and cleaned up, but never downloaded (`baseUrl`/`statusFile` unused).
+  Defaults to `true`.
+- `retentionHours`: retention period in hours. Files are dropped on their **mtime**
+  (when they were downloaded or written), LMDB keys on the **forecast step** they name.
+  A model without this field is never cleaned up. **Honoured since 2.0.0** — earlier
+  versions ignored it and always applied 24 h.
 - `checkInterval`: Cron expression for checking frequency
 - `baseUrl`: Base URL for the model's data
 - `statusFile`: Path to the in-progress status file

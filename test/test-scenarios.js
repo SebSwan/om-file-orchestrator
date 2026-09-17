@@ -1,4 +1,7 @@
 const { testPermissions } = require('./test-permissions');
+const { testPrioritySystem } = require('./test-priority');
+const { isDownloadable } = require('../WeatherOrchestratorSimple');
+const assert = require('assert');
 const fs = require('fs-extra');
 const path = require('path');
 
@@ -131,9 +134,18 @@ class TestScenarios {
     await this.runTest('Subdirectory Creation', () => this.testSubdirectoryCreation());
     await this.runTest('Concurrent Writes', () => this.testConcurrentWrites());
     await this.runTest('Large File Handling', () => this.testLargeFileHandling());
-    await this.runTest('Priority System', () => this.testPrioritySystem());
+    await this.runTest('Priority System', () => testPrioritySystem());
+    await this.runTest('Managed Flag', () => this.testManagedFlag());
 
     this.printSummary();
+  }
+
+  async testManagedFlag() {
+    // Drapeau absent ou true => modèle téléchargé ; seul `false` coupe le téléchargement.
+    assert.strictEqual(isDownloadable({}), true, 'no flag should mean downloadable');
+    assert.strictEqual(isDownloadable({ managed: true }), true, 'managed: true');
+    assert.strictEqual(isDownloadable({ managed: false }), false, 'managed: false');
+    this.log('✅ managed flag: absent/true => downloadable, false => external');
   }
 
   printSummary() {

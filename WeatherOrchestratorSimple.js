@@ -5,7 +5,10 @@ const path = require("path");
 const winston = require("winston");
 const PathCache = require("./path_cache");
 
-const RETENTION_HOURS_CACHE_LMDB = 24;
+// Un modèle `managed: false` est alimenté par un autre processus (ingestion externe qui
+// dépose des fichiers dans cacheDir/<model>/) : on l'indexe et on le purge comme les
+// autres, mais on ne télécharge jamais pour lui. Drapeau absent = modèle téléchargé.
+const isDownloadable = (model) => model.managed !== false;
 
 class WeatherOrchestratorSimple {
   constructor(config, modelConfig, fakeMode = false) {
@@ -141,12 +144,10 @@ class WeatherOrchestratorSimple {
       throwOnTimeout: true,
     });
 
-    // Initialiser la queue de suppression
-    this.cleanupQueue = new PQueue({
-      concurrency: 2, // Limiter les suppressions simultanées
-      interval: 1000, // 1 seconde entre les suppressions
-      intervalCap: 10, // Max 10 suppressions par seconde
-    });
+    // Initialiser la queue de suppression. Pas de limite par seconde : supprimer un
+    // fichier coûte quelques microsecondes, alors qu'un plafond de 10/s transformait
+    // une purge de 15 000 fichiers en 25 minutes. On borne seulement le parallélisme.
+    this.cleanupQueue = new PQueue({ concurrency: 8 });
 
     // Setup des événements de queue
     this.setupQueueEvents();
@@ -164,7 +165,7 @@ class WeatherOrchestratorSimple {
 
     // Programmer les tâches pour chaque modèle
     for (const [modelKey, model] of Object.entries(this.modelConfig.models)) {
-      if (model.enabled) {
+      if (model.enabled && isDownloadable(model)) {
         this.scheduleModel(modelKey, model);
       }
     }
@@ -255,6 +256,11 @@ class WeatherOrchestratorSimple {
   }
 
   async checkAndDownloadModel(modelKey, model) {
+    // Seul point de passage de tous les appelants : la garde y est donc inratable.
+    if (!isDownloadable(model)) {
+      this.logger.debug(`⏭️ ${model.name} is fed externally (managed: false), no download`);
+      return;
+    }
     try {
       this.stats.lastCheck = new Date();
 
@@ -550,6 +556,7 @@ class WeatherOrchestratorSimple {
       }
     }
 
+    await this.cleanupQueue.onIdle(); // ne pas conclure avant la fin des suppressions
     this.stats.filesDeleted += totalFilesDeleted;
     this.stats.cleanupErrors += totalErrors;
 
@@ -558,13 +565,13 @@ class WeatherOrchestratorSimple {
 
   async cleanupModelFiles(modelKey, model) {
     const modelDir = path.join(this.config.storage.cacheDir, modelKey);
-    const retentionMs = RETENTION_HOURS_CACHE_LMDB * 60 * 60 * 1000; // Global retention
-    const cutoffTime = Date.now() - retentionMs;
+    const cutoffTime = Date.now() - model.retentionHours * 60 * 60 * 1000;
     let deletedCount = 0;
 
-    // Nettoyer également les clés LMDB obsolètes
+    // Nettoyer également les clés LMDB obsolètes. Attention : la même durée y porte sur
+    // la date d'ÉCHÉANCE lue dans la clé, alors qu'ici elle porte sur la mtime du fichier.
     if (this.pathCache) {
-        await this.pathCache.cleanup(modelKey, model.name);
+        await this.pathCache.cleanup(modelKey, model.name, model.retentionHours);
     }
 
     // Check if directory exists
@@ -605,18 +612,26 @@ class WeatherOrchestratorSimple {
         } else if (stats.isFile()) {
           // Vérifier si le fichier correspond à l'extension du modèle
           if (item.endsWith(model.fileExtension) || (this.fakeMode && item.endsWith('.txt'))) {
+            // Ancienneté mesurée sur la mtime (heure de téléchargement, ou d'écriture
+            // par l'ingestion externe), pas sur l'échéance contenue dans le fichier.
             if (stats.mtime.getTime() < cutoffTime) {
-              // Ajouter à la queue de suppression
-              await this.cleanupQueue.add(async () => {
+              // Enfilé sans attendre : le parcours continue, `cleanupOldFiles` drainera.
+              this.cleanupQueue.add(async () => {
                 try {
                   await fs.remove(itemPath);
+                  // L'index suit le fichier : les deux critères de purge diffèrent (mtime
+                  // ici, échéance dans LMDB), une clé pourrait sinon désigner un absent.
+                  if (this.pathCache) {
+                    const timestamp = item.replace(path.extname(item), '');
+                    await this.pathCache.dropKeyForFile(modelKey, timestamp, itemPath);
+                  }
                   this.logger.debug(`🗑️  Deleted old file: ${itemPath}`);
-                  onDeleted(1);
                 } catch (error) {
                   this.logger.error(`❌ Failed to delete file ${itemPath}:`, error.message);
                   this.stats.cleanupErrors++;
                 }
               });
+              onDeleted(1);
             }
           }
         }
@@ -702,6 +717,9 @@ class WeatherOrchestratorSimple {
 
     // Trouver le modèle correspondant
     const model = this.modelConfig.models[modelKey];
+    if (model && !isDownloadable(model)) {
+      throw new Error(`Model ${modelKey} is fed externally (managed: false), nothing to download`);
+    }
     if (!model) {
       throw new Error(`Model ${modelKey} not found in configuration`);
     }
@@ -756,3 +774,4 @@ class WeatherOrchestratorSimple {
 }
 
 module.exports = WeatherOrchestratorSimple;
+module.exports.isDownloadable = isDownloadable;
