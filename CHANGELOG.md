@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.0.1
+
+### Fixed
+
+- `dropKeyForFile` compares resolved paths instead of raw strings. The orchestrator indexes
+  `path.join(cacheDir, …)` while an external ingestion (a `managed: false` model) may index
+  an absolute path; with a relative `cacheDir` the two forms never matched, so cleanup
+  deleted the file and kept the key, which then pointed at a missing file until the next
+  index rebuild. The guard itself is unchanged: a key repointed at another file (a newer
+  run) is still preserved. Covered by `test/verify-drop-key-path-forms.js`.
+
+
 ## 2.0.0
 
 ### Breaking

@@ -99,7 +99,14 @@ class PathCache {
    */
   async dropKeyForFile(modelKey, timestamp, filePath) {
     const db = this.dbs[modelKey];
-    if (!db || db.get(timestamp) !== filePath) return false;
+    if (!db) return false;
+    // Comparaison sur les chemins RÉSOLUS, pas sur les chaînes : les producteurs
+    // n'écrivent pas tous la même forme (l'orchestrateur joint sur `cacheDir`, une
+    // ingestion externe — modèle `managed: false` — peut indexer en absolu). Avec un
+    // `cacheDir` relatif les deux formes ne se rencontraient jamais, donc la garde
+    // refusait toujours : le fichier partait, la clé restait et désignait un absent.
+    const stored = db.get(timestamp);
+    if (!stored || path.resolve(stored) !== path.resolve(filePath)) return false;
     await db.remove(timestamp);
     return true;
   }
