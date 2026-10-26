@@ -16,6 +16,8 @@ class WeatherOrchestratorSimple {
     this.modelConfig = modelConfig;
     this.fakeMode = fakeMode;
     this.scheduledTasks = new Map();
+    // Fichiers (chemin relatif) en file ou en cours de téléchargement — cf. enqueueDownload.
+    this.inFlight = new Set();
 
     // Initialiser le logger
     this.setupLogger();
@@ -357,23 +359,40 @@ class WeatherOrchestratorSimple {
     // URL source
     const sourceUrl = `${model.baseUrl}/${year}/${month}/${day}/${runHour}/${forecastTime}${model.fileExtension}`;
 
-    // Ajouter à la queue de téléchargement avec priorité
+    return this.enqueueDownload(sourceUrl, localPath, relativePath, priority);
+  }
+
+  // Un seul téléchargement par fichier. Le check tourne chaque minute alors qu'un gros
+  // fichier met plusieurs minutes à arriver, et processValidTime ne teste que le fichier
+  // final sur le disque : sans cette garde, le même fichier était ré-enfilé à chaque tick,
+  // les deux téléchargements écrivaient le même `.tmp` et le second échouait au rename
+  // (ENOENT) après avoir consommé toute la bande passante.
+  async enqueueDownload(sourceUrl, localPath, relativePath, priority = 0) {
+    if (this.inFlight.has(relativePath)) {
+      this.logger.debug(`⏳ Download already in flight, skipping: ${relativePath}`);
+      this.stats.filesSkipped++;
+      return false;
+    }
+    this.inFlight.add(relativePath);
+
     const priorityLabel = priority > 0 ? ` [PRIORITY ${priority}]` : '';
     this.logger.debug(`📥 Queuing download${priorityLabel}: ${relativePath}`);
 
-    await this.downloadQueue.add(async () => {
-      try {
+    try {
+      await this.downloadQueue.add(async () => {
         if (this.fakeMode) {
           await this.fakeDownloadFile(sourceUrl, localPath, relativePath);
         } else {
           await this.downloadFile(sourceUrl, localPath, relativePath);
         }
         await this.updateIndex(relativePath, localPath);
-      } catch (e) {
-        this.logger.error(`Failed to process ${relativePath}: ${e.message}`);
-        throw e;
-      }
-    }, { priority });
+      }, { priority });
+    } catch (e) {
+      this.logger.error(`Failed to process ${relativePath}: ${e.message}`);
+      throw e;
+    } finally {
+      this.inFlight.delete(relativePath);
+    }
 
     return true;
   }
@@ -736,24 +755,7 @@ class WeatherOrchestratorSimple {
       return false;
     }
 
-    // Ajouter à la queue avec priorité élevée
-    this.logger.info(`📥 Adding high priority download to queue: ${relativePath}`);
-
-    await this.downloadQueue.add(async () => {
-      try {
-        if (this.fakeMode) {
-          await this.fakeDownloadFile(sourceUrl, localPath, relativePath);
-        } else {
-          await this.downloadFile(sourceUrl, localPath, relativePath);
-        }
-        await this.updateIndex(relativePath, localPath);
-      } catch (e) {
-        this.logger.error(`Failed to process priority download ${relativePath}: ${e.message}`);
-        throw e;
-      }
-    }, { priority });
-
-    return true;
+    return this.enqueueDownload(sourceUrl, localPath, relativePath, priority);
   }
 
   // Obtenir des informations sur la queue de téléchargement

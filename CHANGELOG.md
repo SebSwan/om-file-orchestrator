@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.0.2
+
+### Fixed
+
+- A file is never downloaded twice at the same time. `processValidTime` only checks the
+  final file on disk, while the status check runs every minute and a large file takes
+  several minutes to arrive: every tick re-queued the files still in flight, both
+  downloads wrote the same `.tmp`, and the second one failed at rename (ENOENT) after
+  using the full bandwidth — about 13 % of all downloads in production. Queued and
+  in-flight files are now tracked (`inFlight`) and skipped by `processValidTime` and
+  `downloadWithPriority`, which share the new `enqueueDownload`. Covered by
+  `test/verify-inflight-dedup.js`.
+
 ## 2.0.1
 
 ### Fixed

@@ -1,6 +1,6 @@
 {
   "name": "om-file-orchestrator",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A powerful Node.js library for automatically downloading and managing weather data files from OpenMeteo's spatial data API",
   "main": "lib/index.js",
   "bin": {
@@ -12,6 +12,7 @@
     "test:priority": "node test/test-priority.js",
     "test:quick": "node test/test-permissions.js",
     "test:paths": "node test/verify-drop-key-path-forms.js",
+    "test:inflight": "node test/verify-inflight-dedup.js",
     "start": "node index.js",
     "start:fake": "node index.js --fake",
     "dev": "node index.js --immediate",
