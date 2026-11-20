@@ -1,3 +1,5 @@
+> Configuration des modèles : voir [MODEL_CONFIGURATION.md](MODEL_CONFIGURATION.md). Le catalogue est fourni par l’application ; les anciennes instructions supposant un catalogue embarqué sont remplacées par ce contrat.
+
 # Weather Data Orchestrator
 
 A powerful Node.js application for automatically downloading and managing weather data files from OpenMeteo's spatial data API. This orchestrator supports multiple weather models, priority-based downloads, automatic cleanup, and comprehensive testing.
@@ -367,3 +369,7 @@ For issues and questions:
 - [ ] Kubernetes deployment support
 - [ ] Advanced scheduling options
 - [ ] Data validation and integrity checks
+
+## Acquisition GRIB et conversion séparée
+
+Voir [INGESTION.md](INGESTION.md) pour les interfaces publiques, les configurations Météo-France et les tests hors ligne.

@@ -1,10 +1,12 @@
 {
   "name": "om-file-orchestrator",
-  "version": "2.0.2",
-  "description": "A powerful Node.js library for automatically downloading and managing weather data files from OpenMeteo's spatial data API",
+  "version": "2.1.0",
+  "description": "Downloads and manages spatial OM files and GRIB acquisition, with injectable offline ingestion",
   "main": "lib/index.js",
   "bin": {
-    "om-orchestrator": "./index.js"
+    "om-orchestrator": "./index.js",
+    "om-grib-worker": "lib/worker.js",
+    "om-grib-config": "lib/config-cli.js"
   },
   "scripts": {
     "test": "node test/test-scenarios.js",
@@ -19,7 +21,9 @@
     "setup": "chmod +x setup.sh && ./setup.sh",
     "example:simple": "node examples/simple-usage.js",
     "example:fastify": "node examples/fastify-integration.js",
-    "example:custom": "node examples/custom-config.js"
+    "example:custom": "node examples/custom-config.js",
+    "test:ingestion": "node --test test/ingestion*.test.js test/forecast-history.test.js",
+    "test:offline": "npm run test:ingestion && node test/verify-retention-by-step.js && npm run test:paths && npm run test:inflight"
   },
   "author": "Sebastien Etienne <thespotsguru@gmail.com>",
   "license": "ISC",
@@ -41,7 +45,7 @@
   },
   "homepage": "https://github.com/SebSwan/om-file-orchestrator#readme",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.18.0"
   },
   "dependencies": {
     "axios": "^1.11.0",
@@ -50,5 +54,14 @@
     "node-cron": "^4.2.1",
     "p-queue": "^8.1.1",
     "winston": "^3.17.0"
+  },
+  "types": "lib/index.d.ts",
+  "peerDependencies": {
+    "prom-client": ">=14 <16"
+  },
+  "peerDependenciesMeta": {
+    "prom-client": {
+      "optional": true
+    }
   }
 }

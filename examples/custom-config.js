@@ -11,7 +11,7 @@ async function customConfigExample() {
   try {
     // Method 1: Load configurations from files
     console.log('📁 Loading configurations from files...');
-    const { config, modelConfig } = loadConfigurations('./config.json', './config_model.json');
+    const { config, modelConfig } = loadConfigurations('./config.json', process.env.OM_MODEL_CONFIG_FILE);
 
     // Create orchestrator with loaded configurations
     const orchestrator1 = createOrchestrator(config, modelConfig, true); // fake mode
@@ -40,32 +40,7 @@ async function customConfigExample() {
       }
     };
 
-    const customModelConfig = {
-      models: {
-        // Only enable DWD ICON D2 with custom settings
-        dwd_icon_d2: {
-          name: "DWD ICON D2 (Custom)",
-          baseUrl: "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_icon_d2",
-          statusFile: "/in-progress.json",
-          checkInterval: "*/2 * * * *", // Check every 2 minutes
-          fileExtension: ".om",
-          pathPattern: "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-          enabled: true,
-          retentionHours: 12 // Keep files for 12 hours only
-        },
-        // Add ECMWF with different settings
-        ecmwf_ifs025: {
-          name: "ECMWF IFS025 (Custom)",
-          baseUrl: "https://openmeteo.s3.amazonaws.com/data_spatial/ecmwf_ifs025",
-          statusFile: "/in-progress.json",
-          checkInterval: "*/5 * * * *", // Check every 5 minutes
-          fileExtension: ".om",
-          pathPattern: "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-          enabled: true,
-          retentionHours: 48 // Keep files for 48 hours
-        }
-      }
-    };
+    const customModelConfig = modelConfig; // Same canonical catalogue.
 
     // Create orchestrator with custom configuration
     const orchestrator2 = createOrchestrator(customConfig, customModelConfig, true);

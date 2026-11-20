@@ -1,0 +1,27 @@
+{
+  "orchestrator": {
+    "queue": {
+      "concurrency": 2,
+      "interval": 1000,
+      "intervalCap": 4,
+      "timeout": 180000,
+      "retries": 2
+    },
+    "storage": {
+      "cacheDir": "./data",
+      "maxFileSize": 2147483648
+    },
+    "logging": {
+      "level": "info",
+      "file": "./logs/ingestion.log"
+    },
+    "lmdb": {
+      "path": "./data/lmdb",
+      "mapSize": 104857600
+    }
+  },
+  "modelConfigFile": "/app/config/config_model.json",
+  "modelKeys": [
+    "meteofrance_arome_france0025_native"
+  ]
+}

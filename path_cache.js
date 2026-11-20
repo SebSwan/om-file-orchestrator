@@ -112,17 +112,22 @@ class PathCache {
   }
 
   /**
-   * Supprime les clés dont l'ÉCHÉANCE est plus vieille que `retentionHours`.
-   * (La purge des fichiers, elle, se base sur leur mtime — voir cleanupModelFiles.)
+   * Seuil de rétention au format des clés (`YYYY-MM-DDTHHMM`, UTC) : une échéance
+   * strictement antérieure est purgée. Les clés sont de largeur fixe, leur ordre
+   * lexicographique est donc chronologique — clés et noms de fichiers se comparent
+   * à ce seuil comme des chaînes. Partagé par la purge des clés et celle des fichiers.
    */
+  static retentionCutoffKey(retentionHours, now = Date.now()) {
+    const cutoff = new Date(now - retentionHours * 60 * 60 * 1000).toISOString();
+    return cutoff.slice(0, 13) + cutoff.slice(14, 16);
+  }
+
+  /** Supprime les clés dont l'ÉCHÉANCE est plus vieille que `retentionHours`. */
   async cleanup(modelKey, modelName, retentionHours) {
     if (!this.lmdb || !this.dbs[modelKey]) return 0;
 
     const db = this.dbs[modelKey];
-    // Les clés sont des `YYYY-MM-DDTHHMM` de largeur fixe : leur ordre lexicographique
-    // est chronologique, donc le cutoff formaté pareil borne le curseur nativement.
-    const cutoff = new Date(Date.now() - retentionHours * 60 * 60 * 1000).toISOString();
-    const cutoffKey = cutoff.slice(0, 13) + cutoff.slice(14, 16);
+    const cutoffKey = PathCache.retentionCutoffKey(retentionHours);
 
     try {
       const keysToDelete = [...db.getKeys({ end: cutoffKey })];
@@ -174,8 +179,8 @@ class PathCache {
   }
 
   /**
-   * Retire les clés dont le fichier n'existe plus. Sans ça, un fichier purgé sur sa mtime
-   * laisse une entrée d'index que le consommateur résout en chemin mort.
+   * Retire les clés dont le fichier n'existe plus (fichier supprimé hors de la lib, ou
+   * index plus ancien que le disque) : le consommateur les résoudrait en chemin mort.
    */
   async pruneMissingFiles() {
     let dropped = 0;

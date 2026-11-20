@@ -1,0 +1,29 @@
+# Configuration only. No build and no automatic restart. Start manually when ready.
+services:
+  ingestion-pilot:
+    profiles: [manual]
+    image: ${MF_INGESTION_IMAGE:?Indiquer une image compilée et vérifiée}
+    container_name: tile-server-om-ingestion-pilot
+    entrypoint: [node, /app/node_modules/om-file-orchestrator/lib/worker.js, /pilot-config.json]
+    init: true
+    user: "1000:1000"
+    cpus: 2.0
+    mem_limit: 4g
+    memswap_limit: 4g
+    pids_limit: 256
+    restart: "no"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    volumes:
+      - ./indian-ocean-pilot.json:/pilot-config.json:ro
+      - ${OM_MODEL_CONFIG_FILE:?Chemin du config_model.json canonique}:/app/config/config_model.json:ro
+      - /var/data/ingestion-pilot:/var/data/ingestion-pilot
+    expose: ["4319"]
+    networks: [monitoring]
+networks:
+  monitoring:
+    external: true
+    name: ${MF_MONITORING_NETWORK:-kamal}

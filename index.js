@@ -1,6 +1,7 @@
 const WeatherOrchestrator = require("./WeatherOrchestratorSimple");
-const config = require("./config.json");
-const modelConfig = require("./config_model.json");
+const {loadConfigurations} = require("./lib");
+const args = require("node:util").parseArgs({allowPositionals:true,options:{config:{type:"string",default:"./config.json"},models:{type:"string"},fake:{type:"boolean"},immediate:{type:"boolean"}});
+const {config, modelConfig} = loadConfigurations(args.values.config,args.values.models);
 
 // Instance globale
 let orchestrator;

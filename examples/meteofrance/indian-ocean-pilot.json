@@ -1,0 +1,34 @@
+{
+  "requireContainerLimits": true,
+  "port": 4319,
+  "statusFile": "/var/data/ingestion-pilot/status.json",
+  "orchestrator": {
+    "queue": {
+      "concurrency": 2,
+      "interval": 1000,
+      "intervalCap": 2,
+      "timeout": 180000,
+      "retries": 2
+    },
+    "ingestion": {
+      "maxRuns": 1,
+      "preparationConcurrency": 1
+    },
+    "storage": {
+      "cacheDir": "/var/data/ingestion-pilot/om",
+      "maxFileSize": 2147483648
+    },
+    "logging": {
+      "level": "info",
+      "file": "/var/data/ingestion-pilot/logs/pilot.log"
+    },
+    "lmdb": {
+      "path": "/var/data/ingestion-pilot/lmdb",
+      "mapSize": 268435456
+    }
+  },
+  "modelConfigFile": "/app/config/config_model.json",
+  "modelKeys": [
+    "meteofrance_arome_indian_ocean_native"
+  ]
+}

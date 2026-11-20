@@ -1,6 +1,6 @@
 const PathCache = require("../path_cache");
 const config = require("../config.json");
-const modelConfig = require("../config_model.json");
+const modelConfig = require("./fixtures/model-config");
 const fs = require("fs-extra");
 
 // Mock Logger

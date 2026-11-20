@@ -1,0 +1,8 @@
+# Fragment à ajouter manuellement à scrape_configs du Prometheus existant.
+# Le worker doit partager le réseau monitoring défini dans pilot.compose.yml.
+# Ce fichier ne modifie pas le Prometheus actif et ne lance aucun service.
+- job_name: meteofrance-ingestion-pilot
+  metrics_path: /metrics
+  scrape_interval: 10s
+  static_configs:
+    - targets: ['tile-server-om-ingestion-pilot:4319']

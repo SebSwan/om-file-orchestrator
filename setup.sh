@@ -74,27 +74,8 @@ else
     echo -e "${YELLOW}ℹ${NC} config.json already exists"
 fi
 
-if [ ! -f config_model.json ]; then
-    echo "Creating config_model.json..."
-    cat > config_model.json << 'EOF'
-{
-  "models": {
-    "dwd_icon_d2": {
-      "name": "DWD ICON D2",
-      "baseUrl": "https://openmeteo.s3.amazonaws.com/data_spatial/dwd_icon_d2",
-      "statusFile": "/in-progress.json",
-      "checkInterval": "*/1 * * * *",
-      "fileExtension": ".om",
-      "pathPattern": "{year}/{month}/{day}/{runHour}/{forecastTime}.om",
-      "enabled": true
-    }
-  }
-}
-EOF
-    echo -e "${GREEN}✓${NC} config_model.json created"
-else
-    echo -e "${YELLOW}ℹ${NC} config_model.json already exists"
-fi
+echo "Model catalogue: use your application's config_model.json with --models /path/config_model.json"
+echo "No default model catalogue is created by this library."
 
 # Installer les dépendances npm
 echo ""

@@ -10,6 +10,7 @@ async function simpleExample() {
 
   // Create orchestrator with default settings
   const orchestrator = createOrchestratorWithDefaults({
+    modelConfigPath: process.env.OM_MODEL_CONFIG_FILE,
     cacheDir: './my-weather-cache',
     concurrency: 1,
     logLevel: 'info',

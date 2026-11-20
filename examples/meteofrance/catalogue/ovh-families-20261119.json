@@ -1,0 +1,42 @@
+{
+  "baseUrl": "https://meteofrance-pnt.s3.rbx.io.cloud.ovh.net/",
+  "runs": {
+    "pnt/2026-11-19T00:00:00Z/": [
+      "arome-om",
+      "arome",
+      "aromeifs",
+      "arpege",
+      "phealth",
+      "vague-surcote"
+    ],
+    "pnt/2026-11-19T03:00:00Z/": [
+      "arome"
+    ],
+    "pnt/2026-11-19T06:00:00Z/": [
+      "arome-om",
+      "arome",
+      "aromeifs",
+      "arpege",
+      "phealth",
+      "vague-surcote"
+    ],
+    "pnt/2026-11-19T09:00:00Z/": [
+      "arome"
+    ],
+    "pnt/2026-11-19T12:00:00Z/": [
+      "arome-om",
+      "arome",
+      "aromeifs",
+      "arpege",
+      "phealth",
+      "vague-surcote"
+    ],
+    "pnt/2026-11-19T15:00:00Z/": [
+      "arome"
+    ],
+    "pnt/2026-11-19T18:00:00Z/": [
+      "arpege"
+    ]
+  },
+  "note": "Familles effectivement observées lors de la consultation ; une publication peut être incomplète."
+}

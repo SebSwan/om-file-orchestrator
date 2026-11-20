@@ -1,6 +1,6 @@
 const WeatherOrchestrator = require('../WeatherOrchestratorSimple');
 const config = require('../config.json');
-const modelConfig = require('../config_model.json');
+const modelConfig = require('./fixtures/model-config');
 
 /**
  * Test du système de priorités

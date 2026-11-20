@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "domain": "arome_indian_ocean",
+  "verifiedAt": "2026-11-20",
+  "selectionStatus": "documented-not-grib-verified",
+  "documentation": "https://static.data.gouv.fr/resources/documentation-modele/20251030-144533/modeles-description-technique-paquets-arome-om-20251030.pdf",
+  "dataset": "https://www.data.gouv.fr/datasets/paquets-arome-outre-mer-reunion-mayotte-resolution-0-025deg",
+  "notes": [
+    "Sélection compatible avec le profil du convertisseur ; sélecteurs à confirmer sur le premier run réel.",
+    "La fiche actuelle décrit INDIEN XL ; le PDF reprend encore les bornes de l’ancienne grille. Dimensions attendues actuelles : 899 x 1395.",
+    "30 variables physiques ; vitesse et direction du vent ne sont pas dupliquées à partir de U/V.",
+    "Les 11 paquets du run complet restent téléchargés, même si seules 5 familles de paquets fournissent la sélection.",
+    "Modèle désactivé ; aucune acquisition ni conversion déclenchée.",
+    "Les listes et choix de variables sont définis uniquement dans config_model.json ; ce fichier est documentaire."
+  ],
+  "expectedDimensions": [
+    899,
+    1395
+  ],
+  "documentedSelectionCountsByPackage": {
+    "SP1": 11,
+    "SP2": 9,
+    "SP3": 2,
+    "HP1": 4,
+    "IP1": 4
+  },
+  "modelConfigFile": "/app/config/config_model.json",
+  "modelKey": "meteofrance_arome_indian_ocean_native"
+}

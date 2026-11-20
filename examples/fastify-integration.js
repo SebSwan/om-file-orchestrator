@@ -8,6 +8,7 @@ const { createOrchestratorWithDefaults, loadConfigurations } = require('../lib/i
 
 // Create orchestrator instance
 const orchestrator = createOrchestratorWithDefaults({
+    modelConfigPath: process.env.OM_MODEL_CONFIG_FILE,
   cacheDir: './weather-cache',
   concurrency: 2,
   logLevel: 'info',

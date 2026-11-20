@@ -1,0 +1,382 @@
+{
+  "baseUrl": "https://meteofrance-pnt.s3.rbx.io.cloud.ovh.net/",
+  "observedAt": "2026-11-19T21:41:50.844364+00:00",
+  "referenceTime": "2026-11-19T12:00:00Z",
+  "catalogueSha256": "917a201ccab73a3916bcc2748032b93d4a70503deed596219719a9a69e066e7f",
+  "routes": [
+    {
+      "route": "arome-om/ANTIL/0025",
+      "objects": 537,
+      "bytes": 9923397163,
+      "objectsByPackage": {
+        "HP1": 49,
+        "HP2": 49,
+        "HP3": 48,
+        "IP1": 49,
+        "IP2": 49,
+        "IP3": 49,
+        "IP4": 48,
+        "IP5": 49,
+        "SP1": 49,
+        "SP2": 49,
+        "SP3": 49
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/arome-om/ANTIL/0025/HP1/arome-om-ANTIL__0025__HP1__000H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T18:23:59.000Z",
+      "lastModifiedMax": "2026-11-19T19:18:05.000Z"
+    },
+    {
+      "route": "arome-om/GUYANE/0025",
+      "objects": 525,
+      "bytes": 2780870723,
+      "objectsByPackage": {
+        "HP1": 49,
+        "HP2": 37,
+        "HP3": 48,
+        "IP1": 49,
+        "IP2": 49,
+        "IP3": 49,
+        "IP4": 48,
+        "IP5": 49,
+        "SP1": 49,
+        "SP2": 49,
+        "SP3": 49
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/arome-om/GUYANE/0025/HP1/arome-om-GUYANE__0025__HP1__000H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T18:20:12.000Z",
+      "lastModifiedMax": "2026-11-19T19:06:14.000Z"
+    },
+    {
+      "route": "arome-om/INDIEN/0025",
+      "objects": 537,
+      "bytes": 24103154018,
+      "objectsByPackage": {
+        "HP1": 49,
+        "HP2": 49,
+        "HP3": 48,
+        "IP1": 49,
+        "IP2": 49,
+        "IP3": 49,
+        "IP4": 48,
+        "IP5": 49,
+        "SP1": 49,
+        "SP2": 49,
+        "SP3": 49
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/arome-om/INDIEN/0025/HP1/arome-om-INDIEN__0025__HP1__000H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T18:29:52.000Z",
+      "lastModifiedMax": "2026-11-19T19:53:04.000Z"
+    },
+    {
+      "route": "arome-om/NCALED/0025",
+      "objects": 537,
+      "bytes": 5098547373,
+      "objectsByPackage": {
+        "HP1": 49,
+        "HP2": 49,
+        "HP3": 48,
+        "IP1": 49,
+        "IP2": 49,
+        "IP3": 49,
+        "IP4": 48,
+        "IP5": 49,
+        "SP1": 49,
+        "SP2": 49,
+        "SP3": 49
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/arome-om/NCALED/0025/HP1/arome-om-NCALED__0025__HP1__000H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T18:23:03.000Z",
+      "lastModifiedMax": "2026-11-19T19:12:13.000Z"
+    },
+    {
+      "route": "arome-om/POLYN/0025",
+      "objects": 537,
+      "bytes": 4997704758,
+      "objectsByPackage": {
+        "HP1": 49,
+        "HP2": 49,
+        "HP3": 48,
+        "IP1": 49,
+        "IP2": 49,
+        "IP3": 49,
+        "IP4": 48,
+        "IP5": 49,
+        "SP1": 49,
+        "SP2": 49,
+        "SP3": 49
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/arome-om/POLYN/0025/HP1/arome-om-POLYN__0025__HP1__000H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T18:23:35.000Z",
+      "lastModifiedMax": "2026-11-19T19:10:43.000Z"
+    },
+    {
+      "route": "arome/001",
+      "objects": 208,
+      "bytes": 6174188964,
+      "objectsByPackage": {
+        "HP1": 52,
+        "SP1": 52,
+        "SP2": 52,
+        "SP3": 52
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/arome/001/HP1/arome__001__HP1__00H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T14:59:14.000Z",
+      "lastModifiedMax": "2026-11-19T15:53:08.000Z"
+    },
+    {
+      "route": "arome/0025",
+      "objects": 99,
+      "bytes": 24885706378,
+      "objectsByPackage": {
+        "HP1": 9,
+        "HP2": 9,
+        "HP3": 9,
+        "IP1": 9,
+        "IP2": 9,
+        "IP3": 9,
+        "IP4": 9,
+        "IP5": 9,
+        "SP1": 9,
+        "SP2": 9,
+        "SP3": 9
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/arome/0025/HP1/arome__0025__HP1__00H06H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T20:30:04.000Z",
+      "lastModifiedMax": "2026-11-19T20:42:52.000Z"
+    },
+    {
+      "route": "aromeifs/0025",
+      "objects": 99,
+      "bytes": 24547596987,
+      "objectsByPackage": {
+        "HP1": 9,
+        "HP2": 9,
+        "HP3": 9,
+        "IP1": 9,
+        "IP2": 9,
+        "IP3": 9,
+        "IP4": 9,
+        "IP5": 9,
+        "SP1": 9,
+        "SP2": 9,
+        "SP3": 9
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/aromeifs/0025/HP1/aromeifs__0025__HP1__00H06H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T18:36:57.000Z",
+      "lastModifiedMax": "2026-11-19T19:18:52.000Z"
+    },
+    {
+      "route": "arpege/01",
+      "objects": 72,
+      "bytes": 14566816533,
+      "objectsByPackage": {
+        "HP1": 9,
+        "HP2": 9,
+        "IP1": 9,
+        "IP2": 9,
+        "IP3": 9,
+        "IP4": 9,
+        "SP1": 9,
+        "SP2": 9
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/arpege/01/HP1/arpege__01__HP1__000H012H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T14:31:16.000Z",
+      "lastModifiedMax": "2026-11-19T15:09:18.000Z"
+    },
+    {
+      "route": "arpege/025",
+      "objects": 36,
+      "bytes": 43264014912,
+      "objectsByPackage": {
+        "HP1": 4,
+        "HP2": 4,
+        "IP1": 4,
+        "IP2": 4,
+        "IP3": 4,
+        "IP4": 4,
+        "SP1": 4,
+        "SP2": 4,
+        "SP3": 4
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/arpege/025/HP1/arpege__025__HP1__000H024H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T14:43:17.000Z",
+      "lastModifiedMax": "2026-11-19T15:19:35.000Z"
+    },
+    {
+      "route": "phealth/CARAIB0025",
+      "objects": 1,
+      "bytes": 1331353,
+      "objectsByPackage": {
+        "UVQ": 1
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/phealth/CARAIB0025/UVQ/phealth__CARAIB0025__UVQ__001H048H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T19:27:26.000Z",
+      "lastModifiedMax": "2026-11-19T19:27:26.000Z"
+    },
+    {
+      "route": "phealth/EURW1S40",
+      "objects": 1,
+      "bytes": 1849022,
+      "objectsByPackage": {
+        "UVQ": 1
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/phealth/EURW1S40/UVQ/phealth__EURW1S40__UVQ__001H051H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T16:09:24.000Z",
+      "lastModifiedMax": "2026-11-19T16:09:24.000Z"
+    },
+    {
+      "route": "phealth/GLOBE025",
+      "objects": 1,
+      "bytes": 4537246,
+      "objectsByPackage": {
+        "UVQ": 1
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/phealth/GLOBE025/UVQ/phealth__GLOBE025__UVQ__001H102H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T19:12:32.000Z",
+      "lastModifiedMax": "2026-11-19T19:12:32.000Z"
+    },
+    {
+      "route": "phealth/GUYANE0025",
+      "objects": 1,
+      "bytes": 416202,
+      "objectsByPackage": {
+        "UVQ": 1
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/phealth/GUYANE0025/UVQ/phealth__GUYANE0025__UVQ__001H048H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T19:12:24.000Z",
+      "lastModifiedMax": "2026-11-19T19:12:24.000Z"
+    },
+    {
+      "route": "phealth/INDIEN0025",
+      "objects": 1,
+      "bytes": 2598140,
+      "objectsByPackage": {
+        "UVQ": 1
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/phealth/INDIEN0025/UVQ/phealth__INDIEN0025__UVQ__001H048H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T20:18:18.000Z",
+      "lastModifiedMax": "2026-11-19T20:18:18.000Z"
+    },
+    {
+      "route": "phealth/NCALED0025",
+      "objects": 1,
+      "bytes": 778290,
+      "objectsByPackage": {
+        "UVQ": 1
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/phealth/NCALED0025/UVQ/phealth__NCALED0025__UVQ__001H048H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T19:15:22.000Z",
+      "lastModifiedMax": "2026-11-19T19:15:22.000Z"
+    },
+    {
+      "route": "phealth/POLYN0025",
+      "objects": 1,
+      "bytes": 753563,
+      "objectsByPackage": {
+        "UVQ": 1
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/phealth/POLYN0025/UVQ/phealth__POLYN0025__UVQ__001H048H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T19:18:20.000Z",
+      "lastModifiedMax": "2026-11-19T19:18:20.000Z"
+    },
+    {
+      "route": "vague-surcote/HYCOM2D-MARO/004",
+      "objects": 52,
+      "bytes": 3015945,
+      "objectsByPackage": {
+        "SP1": 52
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/vague-surcote/HYCOM2D-MARO/004/SP1/vague-surcote-HYCOM2D-MARO__004__SP1__000H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T16:12:42.000Z",
+      "lastModifiedMax": "2026-11-19T16:13:17.000Z"
+    },
+    {
+      "route": "vague-surcote/HYCOM2D-MARP/004",
+      "objects": 103,
+      "bytes": 6009193,
+      "objectsByPackage": {
+        "SP1": 103
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/vague-surcote/HYCOM2D-MARP/004/SP1/vague-surcote-HYCOM2D-MARP__004__SP1__000H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T15:15:53.000Z",
+      "lastModifiedMax": "2026-11-19T15:17:40.000Z"
+    },
+    {
+      "route": "vague-surcote/HYCOM2D-WARO/004",
+      "objects": 52,
+      "bytes": 4496151,
+      "objectsByPackage": {
+        "SP1": 52
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/vague-surcote/HYCOM2D-WARO/004/SP1/vague-surcote-HYCOM2D-WARO__004__SP1__000H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T16:06:33.000Z",
+      "lastModifiedMax": "2026-11-19T16:07:12.000Z"
+    },
+    {
+      "route": "vague-surcote/HYCOM2D-WARP/004",
+      "objects": 103,
+      "bytes": 8926439,
+      "objectsByPackage": {
+        "SP1": 103
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/vague-surcote/HYCOM2D-WARP/004/SP1/vague-surcote-HYCOM2D-WARP__004__SP1__000H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T15:25:14.000Z",
+      "lastModifiedMax": "2026-11-19T15:29:10.000Z"
+    },
+    {
+      "route": "vague-surcote/MFWAM/0025",
+      "objects": 49,
+      "bytes": 253411761,
+      "objectsByPackage": {
+        "SP1": 49
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/vague-surcote/MFWAM/0025/SP1/vague-surcote-MFWAM__0025__SP1__001H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T16:15:36.000Z",
+      "lastModifiedMax": "2026-11-19T16:16:27.000Z"
+    },
+    {
+      "route": "vague-surcote/MFWAM/01",
+      "objects": 66,
+      "bytes": 6002622477,
+      "objectsByPackage": {
+        "SP1": 66
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/vague-surcote/MFWAM/01/SP1/vague-surcote-MFWAM__01__SP1__001H__2026-11-19T12:00:00Z.grib2",
+      "lastModifiedMin": "2026-11-19T16:09:56.000Z",
+      "lastModifiedMax": "2026-11-19T16:16:28.000Z"
+    },
+    {
+      "route": "vague-surcote/WW3-MARO/001",
+      "objects": 1,
+      "bytes": 180661876,
+      "objectsByPackage": {
+        "SP1": 1
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/vague-surcote/WW3-MARO/001/SP1/vague-surcote-WW3-MARO__001__SP1__000H999H__2026-11-19T12:00:00Z.nc",
+      "lastModifiedMin": "2026-11-19T16:36:35.000Z",
+      "lastModifiedMax": "2026-11-19T16:36:35.000Z"
+    },
+    {
+      "route": "vague-surcote/WW3-MARP/001",
+      "objects": 1,
+      "bytes": 203265016,
+      "objectsByPackage": {
+        "SP1": 1
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/vague-surcote/WW3-MARP/001/SP1/vague-surcote-WW3-MARP__001__SP1__000H999H__2026-11-19T12:00:00Z.nc",
+      "lastModifiedMin": "2026-11-19T16:27:39.000Z",
+      "lastModifiedMax": "2026-11-19T16:27:39.000Z"
+    },
+    {
+      "route": "vague-surcote/WW3-WARP/001",
+      "objects": 1,
+      "bytes": 210237672,
+      "objectsByPackage": {
+        "SP1": 1
+      },
+      "sampleKey": "pnt/2026-11-19T12:00:00Z/vague-surcote/WW3-WARP/001/SP1/vague-surcote-WW3-WARP__001__SP1__000H999H__2026-11-19T12:00:00Z.nc",
+      "lastModifiedMin": "2026-11-19T16:42:45.000Z",
+      "lastModifiedMax": "2026-11-19T16:42:45.000Z"
+    }
+  ]
+}

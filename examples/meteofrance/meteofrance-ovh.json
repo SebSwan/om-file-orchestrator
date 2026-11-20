@@ -1,0 +1,32 @@
+{
+  "requireContainerLimits": true,
+  "port": 4319,
+  "statusFile": "/var/data/meteofrance/status.json",
+  "orchestrator": {
+    "queue": {
+      "concurrency": 2,
+      "interval": 1000,
+      "intervalCap": 2,
+      "timeout": 180000,
+      "retries": 2
+    },
+    "ingestion": {
+      "maxRuns": 1,
+      "preparationConcurrency": 1
+    },
+    "storage": {
+      "cacheDir": "/var/data/meteofrance/om",
+      "maxFileSize": 2147483648
+    },
+    "logging": {
+      "level": "info",
+      "file": "/var/data/meteofrance/logs/ingestion.log"
+    },
+    "lmdb": {
+      "path": "/var/data/meteofrance/lmdb",
+      "mapSize": 268435456
+    }
+  },
+  "modelConfigFile": "/app/config/config_model.json",
+  "modelProvider": "meteofrance-grib"
+}

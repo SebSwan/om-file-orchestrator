@@ -58,7 +58,7 @@ async function run() {
         orch.processValidTime(modelKey, model, "2020-12-15T13:00Z", "2020-12-15T12:00Z"),
         orch.downloadWithPriority(relatif, 5)
     ]);
-    check(p1 === true && p2 === false, `prioritaire ignoré quand le fichier est déjà en vol (${p1}, ${p2})`);
+    check(Number(p1) + Number(p2) === 1 && orch.stats.filesDownloaded === 2, `un seul transfert normal/prioritaire, quel que soit l’ordre des accès disque (${p1}, ${p2})`);
 
     // 4. Un échec libère la garde : le fichier peut être retenté au tick suivant.
     orch.fakeDownloadFile = async () => { throw new Error("réseau"); };

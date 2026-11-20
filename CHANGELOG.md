@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.1.0 — préparation locale, non publiée
+
+- Catalogue unique fourni par l’application : suppression des modèles embarqués, des modèles du pilote et des filtres d’activation implicites ; chargement partagé serveur/worker/CLI.
+
+- Acquisition GRIB Météo-France intégrée à l'orchestrateur existant ; convertisseur indépendant injecté.
+- Sélection explicite de variables, file bornée, reprises sur cache vérifié et contrôle des ressources.
+- Publication de runs OM spatiaux, reprise d'indexation et rétention GRIB indépendante.
+- Gestion de l'historique des prévisions déplacée depuis le serveur, avec politique conservée.
+- API d'observation, métriques Prometheus, inspection de configuration hors ligne et worker isolé.
+- Préparation AROME océan Indien : 11 paquets, +0 à +48 h et 30 variables ; modèle désactivé.
+- Plafond de taille GRIB configurable par source sans modifier les téléchargements OM historiques.
+- 49 tests ingestion/historique et régressions historiques hors ligne vérifiés.
+
+Cette version n'est ni taguée, ni poussée, ni publiée. Le tag existant v2.0.2 reste inchangé. Les tests du codec natif et la compilation TypeScript/Rust restent à effectuer.
+
+
 ## 2.0.2
 
 ### Fixed
