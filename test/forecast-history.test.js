@@ -18,9 +18,9 @@ function fixture(t) {
   const db = lmdb.openDB({ name: model });
   const cache = { lmdb, dbs: { [model]: db } };
   const createHistory = () => new ForecastHistory(cache, root, model, async () => true, assert.fail);
-  const publish = (run, ...times) => {
+  const publishFor = (name, run, ...times) => {
     const iso = new Date(run).toISOString();
-    const folder = path.join(root, model, iso.slice(0, 10).replaceAll('-', '/'), iso.slice(11, 16).replace(':', '') + 'Z');
+    const folder = path.join(root, name, iso.slice(0, 10).replaceAll('-', '/'), iso.slice(11, 16).replace(':', '') + 'Z');
     mkdirSync(folder, { recursive: true });
     return times.map((time) => {
       const file = path.join(folder, formatTimestampKey(time) + '.om');
@@ -32,7 +32,8 @@ function fixture(t) {
     await lmdb.close();
     rmSync(root, { recursive: true, force: true });
   });
-  return { cache, root, createHistory, publish, get: (time) => db.get(formatTimestampKey(time)) };
+  const publish = (run, ...times) => publishFor(model, run, ...times);
+  return { cache, root, createHistory, publish, publishFor, get: (time) => db.get(formatTimestampKey(time)) };
 }
 
 test('keeps 36 hours before the active run, handles missing and late runs, and retires superseded files', async (t) => {
@@ -110,12 +111,15 @@ test('a single file at +1 can activate a run at midnight and keep the previous v
   assert.ok(existsSync(old));
 });
 
-test('routes the configured model through the new publisher and leaves the legacy hooks for other models', async (t) => {
-  const { cache, root, publish, get } = fixture(t);
+test('keeps rolling history for all active downloaded OM models, including 15-minute steps', async (t) => {
+  const { cache, root, publish, publishFor, get } = fixture(t);
+  const subHourly = 'test-15min';
+  const subHourlyDb = cache.lmdb.openDB({ name: subHourly });
   const calls = [];
   const rebuilt = [];
   const pathCache = {
     ...cache,
+    dbs: { ...cache.dbs, [subHourly]: subHourlyDb },
     async rebuild(config) { rebuilt.push(...Object.keys(config.models)); }
   };
   const orch = {
@@ -124,23 +128,44 @@ test('routes the configured model through the new publisher and leaves the legac
     async cleanupModelFiles(name) { calls.push(name); return 1; },
     async processValidTime() { calls.push('download'); return true; }
   };
-  const policy = { enabled: true, fileExtension: '.om', forecastHistory: true };
-  const service = setupForecastHistory(orch, { [model]: policy }, root, async () => true, assert.fail);
+  const policy = { enabled: true, fileExtension: '.om' };
+  const models = {
+    [model]: policy,
+    [subHourly]: policy,
+    legacy: { ...policy, managed: false },
+    disabled: { ...policy, enabled: false },
+    optedOut: { ...policy, forecastHistory: false }
+  };
+  const service = setupForecastHistory(orch, models, root, async () => true, assert.fail);
   const run = Date.now() - 10 * hour;
   const init = Math.floor(run / hour) * hour;
   const [file] = publish(init, init, init + hour, init + 2 * hour);
+  const cutoff = init - 36 * hour;
+  const quarter = hour / 4;
+  const [, oldStep] = publishFor(subHourly, cutoff - hour, cutoff - quarter, cutoff);
+  const [newStep] = publishFor(subHourly, init, init + quarter);
+  const lateRun = init + hour;
+  let updatedFile;
   try {
     orch.pathCache = pathCache;
-    await orch.pathCache.rebuild({ models: { [model]: policy, legacy: {} } });
-    assert.deepEqual(rebuilt, ['legacy']);
+    await orch.pathCache.rebuild({ models });
+    assert.deepEqual(rebuilt, ['legacy', 'disabled', 'optedOut']);
     await service.start();
     assert.equal(get(init), file);
+    assert.equal(subHourlyDb.get(formatTimestampKey(cutoff - quarter)), undefined);
+    assert.equal(subHourlyDb.get(formatTimestampKey(cutoff)), oldStep);
+    assert.equal(subHourlyDb.get(formatTimestampKey(init + quarter)), newStep);
     assert.equal(await orch.cleanupModelFiles(model), 0);
+    assert.equal(await orch.cleanupModelFiles(subHourly), 0);
     assert.equal(await orch.cleanupModelFiles('legacy'), 1);
-    await orch.updateIndex(`${model}/test.om`);
+    [updatedFile] = publish(lateRun, lateRun);
+    publishFor(subHourly, lateRun, lateRun);
+    await orch.updateIndex(path.relative(root, updatedFile));
     await orch.updateIndex('legacy/test.om');
   } finally {
     await service.stop();
   }
+  assert.equal(get(lateRun), updatedFile);
+  assert.equal(subHourlyDb.get(formatTimestampKey(lateRun)), undefined);
   assert.deepEqual(calls, ['legacy', 'legacy/test.om']);
 });
