@@ -130,6 +130,19 @@ test('public registration rejects an empty or unknown selection before source di
   } finally {o.logger.close();await rm(root,{recursive:true});}
 });
 
+test('a run already published by this process is not verified again on the next tick', async () => {
+  const root=await mkdtemp(path.join(tmpdir(),'orchestrator-published-'));
+  const o=createOrchestrator({logging:{level:'error',file:path.join(root,'log')},queue:{},storage:{cacheDir:root}},{models:{}});
+  const referenceTime='2026-11-20T12:00:00Z';
+  o.registerSource('fixture',{discover:async()=>({referenceTime,missing:[],validTimes:[referenceTime],files:[{name:'a.grib2',url:'https://test.invalid/a',bytes:1}]}),sourceLayout:()=>({dimensions:[1,1]})});
+  o.registerConverter('grib-to-om',{loadRules:async()=>[{name:'t'}],convert:async()=>{throw new Error('Unexpected conversion');}});
+  try {
+    o.grib.published.set('model',referenceTime);
+    const result=await o.checkAndDownloadModel('model',{enabled:true,ingestion:{provider:'fixture',maxForecastHour:0,variables:['t']}});
+    assert.deepEqual(result,{status:'already-published',referenceTime});
+  } finally {o.logger.close();await rm(root,{recursive:true});}
+});
+
 test('shared runtime refuses extra models while admission is full and drains on stop', async () => {
   const root=await mkdtemp(path.join(tmpdir(),'orchestrator-admission-'));
   const o=createOrchestrator({ingestion:{maxRuns:1},logging:{level:'error',file:path.join(root,'log')},queue:{},storage:{cacheDir:root}},{models:{}});
