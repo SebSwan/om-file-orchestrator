@@ -1,6 +1,6 @@
 {
   "name": "om-file-orchestrator",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Downloads and manages spatial OM files and GRIB acquisition, with injectable offline ingestion",
   "main": "lib/index.js",
   "bin": {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.0
+
+- Historique glissant : repli par échéance. Quand le fichier retenu (run le plus récent) n'a pas toutes les variables d'un run antérieur pour la même échéance — fichier d'initialisation sans cumuls, run intermédiaire qui publie moins de champs (IFS 06/18Z) —, ce fichier antérieur est gardé sur disque et exposé par `orch.getFallbackPath(model, key)` / `ForecastHistory.fallback(key)`. Le validateur peut renvoyer la liste des variables du fichier (`string[]`) au lieu d'un booléen ; un booléen garde l'ancien comportement (aucun repli).
+
 ## 2.1.0 — préparation locale, non publiée
 
 - Catalogue unique fourni par l’application : suppression des modèles embarqués, des modèles du pilote et des filtres d’activation implicites ; chargement partagé serveur/worker/CLI.

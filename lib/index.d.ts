@@ -25,12 +25,17 @@ export const meteofrance: SourceAdapter & {discoverRun(config:any,now?:number,fe
 export function ingestWorkflow(plan:RunPlan,options:any):Promise<any>;
 export const version: string;
 
+/** `true`/`false`, ou les variables du fichier (liste vide = invalide) : seules ces dernières permettent un repli. */
+export type ForecastFileValidator=(file:string)=>Promise<boolean|string[]>;
 export class ForecastHistory {
-  constructor(cache:any,root:string,model:string,validate:(file:string)=>Promise<boolean>,report:(error:unknown,model:string)=>void,inFlight?:ReadonlySet<string>);
+  constructor(cache:any,root:string,model:string,validate:ForecastFileValidator,report:(error:unknown,model:string)=>void,inFlight?:ReadonlySet<string>);
   shouldDownload(validTime:string,referenceTime:string):boolean;
+  /** Fichier d'un run antérieur pour l'échéance `key`, gardé tant que le retenu n'a pas toutes ses variables. */
+  fallback(key:string):string|undefined;
   sync(now?:number):Promise<void>;
 }
-export function setupForecastHistory(orch:any,models:Record<string,any>,root:string,validate:(file:string)=>Promise<boolean>,report:(error:unknown,model:string)=>void): {start():Promise<void>;stop():Promise<void>} | undefined;
+/** Pose aussi `orch.getFallbackPath(model, key)` (voir ForecastHistory.fallback). */
+export function setupForecastHistory(orch:any,models:Record<string,any>,root:string,validate:ForecastFileValidator,report:(error:unknown,model:string)=>void): {start():Promise<void>;stop():Promise<void>} | undefined;
 
 export interface IngestionConfigurationReport {
   valid:boolean;errors:string[];

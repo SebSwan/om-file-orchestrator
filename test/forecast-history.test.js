@@ -17,7 +17,7 @@ function fixture(t) {
   const lmdb = open(path.join(root, 'lmdb'));
   const db = lmdb.openDB({ name: model });
   const cache = { lmdb, dbs: { [model]: db } };
-  const createHistory = () => new ForecastHistory(cache, root, model, async () => true, assert.fail);
+  const createHistory = (validate = async () => true) => new ForecastHistory(cache, root, model, validate, assert.fail);
   const publishFor = (name, run, ...times) => {
     const iso = new Date(run).toISOString();
     const folder = path.join(root, name, iso.slice(0, 10).replaceAll('-', '/'), iso.slice(11, 16).replace(':', '') + 'Z');
@@ -95,6 +95,36 @@ test('uses the older file when a newer active run has a hole, and removes a vani
   unlinkSync(fallback);
   await history.sync(now + 25 * hour + 1);
   assert.equal(get(on(18)), undefined);
+});
+
+test('keeps an older file as fallback while the selected one lacks some of its variables', async (t) => {
+  const { createHistory, publish, get } = fixture(t);
+  const variables = new Map();
+  const history = createHistory(async (file) => variables.get(file) ?? ['temperature_2m']);
+  const [, old15, old16] = publish(on(9), on(9), on(15), on(16));
+  for (const file of [old15, old16]) variables.set(file, ['temperature_2m', 'precipitation']);
+  await history.sync(now);
+  assert.equal(history.fallback(formatTimestampKey(on(15))), undefined);
+
+  // Le run de 15 h : son fichier d'initialisation n'a pas les cumuls, l'échéance suivante si.
+  const [init, next] = publish(on(15), on(15), on(16));
+  variables.set(next, ['temperature_2m', 'precipitation']);
+  await history.sync(now + 1);
+  assert.equal(get(on(15)), init);
+  assert.equal(history.fallback(formatTimestampKey(on(15))), old15);
+  assert.equal(get(on(16)), next);
+  assert.equal(history.fallback(formatTimestampKey(on(16))), undefined);
+
+  // Après le délai de grâce : le repli reste sur disque, l'échéance remplacée est supprimée.
+  await history.sync(now + 16 * 60_000);
+  assert.ok(existsSync(old15));
+  assert.ok(!existsSync(old16));
+
+  // Le fichier retenu disparaît : l'ancien redevient l'échéance, sans repli.
+  unlinkSync(init);
+  await history.sync(now + 17 * 60_000);
+  assert.equal(get(on(15)), old15);
+  assert.equal(history.fallback(formatTimestampKey(on(15))), undefined);
 });
 
 test('a single file at +1 can activate a run at midnight and keep the previous value at +0', async (t) => {
