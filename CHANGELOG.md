@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.0
+
+- AROME outre-mer en table (`OVERSEAS`, `lib/sources/meteofrance.js`) : océan Indien, Nouvelle-Calédonie (`arome_new_caledonia`, `NCALED`, 521 × 491) et Polynésie (`arome_polynesia`, `POLYN`, 521 × 507). Même famille `arome-om`, grille 0,025°, horaire jusqu'à +48 h, run toutes les 6 h ; HP3 et IP4 absents à +0 sur toutes les zones. Grilles relevées dans les GRIB du run 2026-11-22 00Z.
+
 ## 2.2.0
 
 - Historique glissant : repli par échéance. Quand le fichier retenu (run le plus récent) n'a pas toutes les variables d'un run antérieur pour la même échéance — fichier d'initialisation sans cumuls, run intermédiaire qui publie moins de champs (IFS 06/18Z) —, ce fichier antérieur est gardé sur disque et exposé par `orch.getFallbackPath(model, key)` / `ForecastHistory.fallback(key)`. Le validateur peut renvoyer la liste des variables du fichier (`string[]`) au lieu d'un booléen ; un booléen garde l'ancien comportement (aucun repli).

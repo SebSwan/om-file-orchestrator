@@ -72,6 +72,19 @@ test('Indian Ocean catalogue covers all 537 objects and omits only known absent 
  assert.deepEqual(sourceLayout({domain:'arome_indian_ocean',packages,maxForecastHour:48}).dimensions,[899,1395]);
 });
 
+test('New Caledonia and Polynesia use the overseas layout with their own region and grid',async()=>{
+ const referenceTime='2026-11-22T00:00:00Z';const packages=['SP1','HP3'];
+ for(const [domain,region,dimensions] of [['arome_new_caledonia','NCALED',[491,521]],['arome_polynesia','POLYN',[507,521]]]){
+  const objects=[];
+  for(let h=0;h<=48;h++)for(const p of packages){if(h===0&&p==='HP3')continue;objects.push(`<Contents><Key>pnt/${referenceTime}/arome-om/${region}/0025/${p}/arome-om-${region}__0025__${p}__${String(h).padStart(3,'0')}H__${referenceTime}.grib2</Key><Size>100</Size></Contents>`);}
+  let request='';
+  const plan=await discoverRun({domain,packages,maxForecastHour:48,referenceTime},0,(async(url)=>{request=String(url);return new Response('<ListBucketResult>'+objects.join('')+'</ListBucketResult>');}));
+  assert.equal(plan.files.length,97);assert.deepEqual(plan.missing,[]);assert.match(decodeURIComponent(request),new RegExp(`arome-om/${region}/0025`));
+  const layout=sourceLayout({domain,packages,maxForecastHour:48});
+  assert.deepEqual(layout.dimensions,dimensions);assert.equal(layout.cadence,6);
+ }
+});
+
 test('GRIB retention is independent and preserves active or failed work',async()=>{
  const root=await mkdtemp(path.join(tmpdir(),'grib-retention-'));
  try{
